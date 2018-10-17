@@ -67,8 +67,8 @@ Arduino = 29 -> WeMos= NC
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);   // All Boards without Reset of the Display
 
 // Wifi Settings
-char ssid[] = "VodafoneSurfer";  //  your network SSID (name)
-char pass[] = "B311a@P3r.Te";       // your network password
+char ssid[] = "<YOURWIFISSID>";  //  your network SSID (name)
+char pass[] = "<YOURWIFIPASS>";       // your network password
 
 const String fName = "props.txt"; // properties file
 
@@ -117,8 +117,8 @@ MQ135 mq135_sensor = MQ135(PIN_MQ135);
 Adafruit_BMP085 bmp;
  
 // Settaggi ThingSpeak
-unsigned long myChannelNumber = 206145;
-const char * myWriteAPIKey = "9HJAG2G3F4R4C7KP";
+unsigned long myChannelNumber = <YOURTHINGSPEAKCHANNEL>;
+const char * myWriteAPIKey = "<YOURTHINGSPEAKWRITEAPIKEY>";
 
 // Settaggi Barometro BMP180 
 //float seaLevelPressure = 101325;
