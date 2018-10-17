@@ -45,16 +45,12 @@ Arduino = 29 -> WeMos= NC
 //#include <ACROBOTIC_SSD1306.h>
 #include <Arduino.h>
 #include <U8g2lib.h>
-
 #include <ESP8266WebServer.h>
 #include <FS.h> // FOR SPIFFS
 #include <ctype.h> // for isNumber check
 #include "Time.h"
 #include "TimeLib.h"
 #include "SSD1306.h"
-
-
-
 
 // Initialize Display
 #ifdef U8X8_HAVE_HW_SPI
@@ -64,11 +60,180 @@ Arduino = 29 -> WeMos= NC
 #include <Wire.h>
 #endif
 
+// Please UNCOMMENT one of the contructor lines below
+// U8g2 Contructor List (Frame Buffer)
+// The complete list is available here: https://github.com/olikraus/u8g2/wiki/u8g2setupcpp
+// Please update the pin numbers according to your setup. Use U8X8_PIN_NONE if the reset pin is not connected
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);   // All Boards without Reset of the Display
+//U8G2_NULL u8g2(U8G2_R0);  // null device, a 8x8 pixel display which does nothing
+//U8G2_SSD1306_128X64_NONAME_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 12, /* dc=*/ 4, /* reset=*/ 6); // Arduboy (Production, Kickstarter Edition)
+//U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1306_128X64_NONAME_F_3W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* reset=*/ 8);
+//U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+//U8G2_SSD1306_128X64_ALT0_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);   // same as the NONAME variant, but may solve the "every 2nd line skipped" problem
+//U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* reset=*/ 8);
+//U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);   // All Boards without Reset of the Display
+//U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 16, /* data=*/ 17, /* reset=*/ U8X8_PIN_NONE);   // ESP32 Thing, pure SW emulated I2C
+//U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE, /* clock=*/ 16, /* data=*/ 17);   // ESP32 Thing, HW I2C with pin remapping
+//U8G2_SSD1306_128X64_NONAME_F_6800 u8g2(U8G2_R0, 13, 11, 2, 3, 4, 5, 6, A4, /*enable=*/ 7, /*cs=*/ 10, /*dc=*/ 9, /*reset=*/ 8);
+//U8G2_SSD1306_128X64_NONAME_F_8080 u8g2(U8G2_R0, 13, 11, 2, 3, 4, 5, 6, A4, /*enable=*/ 7, /*cs=*/ 10, /*dc=*/ 9, /*reset=*/ 8);
+//U8G2_SSD1306_128X64_VCOMH0_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); // same as the NONAME variant, but maximizes setContrast() range
+//U8G2_SSD1306_128X64_ALT0_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); // same as the NONAME variant, but may solve the "every 2nd line skipped" problem
+//U8G2_SH1106_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+//U8G2_SH1106_128X64_VCOMH0_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);    // same as the NONAME variant, but maximizes setContrast() range
+//U8G2_SH1106_128X64_WINSTAR_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);   // same as the NONAME variant, but uses updated SH1106 init sequence
+//U8G2_SH1106_72X40_WISE_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SH1107_64X128_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SH1107_128X128_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SH1107_128X128_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ 8);
+//U8G2_SH1107_SEEED_96X96_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SH1108_160X160_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SH1122_256X64_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);       // Enable U8G2_16BIT in u8g2.h
+//U8G2_SSD1306_128X32_UNIVISION_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 21, /* data=*/ 20, /* reset=*/ U8X8_PIN_NONE);   // Adafruit Feather M0 Basic Proto + FeatherWing OLED
+//U8G2_SSD1306_128X32_UNIVISION_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);   // Adafruit Feather ESP8266/32u4 Boards + FeatherWing OLED
+//U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);  // Adafruit ESP8266/32u4/ARM Boards + FeatherWing OLED
+//U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE, /* clock=*/ SCL, /* data=*/ SDA);   // pin remapping with ESP8266 HW I2C
+//U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);   // EastRising 0.66" OLED breakout board, Uno: A4=SDA, A5=SCL, 5V powered
+//U8G2_SSD1306_48X64_WINSTAR_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);   
+//U8G2_SSD1306_64X32_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); 
+//U8G2_SSD1306_64X32_1F_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); 
+//U8G2_SSD1306_96X16_ER_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);   // EastRising 0.69" OLED
+//U8G2_SSD1322_NHD_256X64_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); // Enable U8G2_16BIT in u8g2.h
+//U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  // Enable U8G2_16BIT in u8g2.h
+//U8G2_SSD1322_NHD_128X64_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1322_NHD_128X64_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1325_NHD_128X64_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); 
+//U8G2_SSD1325_NHD_128X64_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  
+//U8G2_SSD1326_ER_256X32_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);         // experimental driver for ER-OLED018-1
+//U8G2_SSD1327_SEEED_96X96_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);  // Seeedstudio Grove OLED 96x96
+//U8G2_SSD1327_SEEED_96X96_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); // Seeedstudio Grove OLED 96x96
+//U8G2_SSD1327_EA_W128128_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1327_EA_W128128_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1327_EA_W128128_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 5, /* data=*/ 4, /* reset=*/ U8X8_PIN_NONE);
+//U8G2_SSD1327_EA_W128128_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+//U8G2_SSD1327_MIDAS_128X128_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1327_MIDAS_128X128_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1329_128X96_NONAME_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1329_128X96_NONAME_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1305_128X32_NONAME_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1305_128X32_NONAME_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1306_128X64_ADAFRUIT_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1306_128X64_ADAFRUIT_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1309_128X64_NONAME0_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  
+//U8G2_SSD1309_128X64_NONAME0_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  
+//U8G2_SSD1309_128X64_NONAME2_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  
+//U8G2_SSD1309_128X64_NONAME2_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  
+//U8G2_SSD1317_96X96_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  
+//U8G2_SSD1317_96X96_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); 
+//U8G2_LD7032_60X32_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 11, /* data=*/ 12, /* cs=*/ 9, /* dc=*/ 10, /* reset=*/ 8); // SW SPI Nano Board
+//U8G2_LD7032_60X32_F_4W_SW_I2C u8g2(U8G2_R0, /* clock=*/ 11, /* data=*/ 12, /* reset=*/ U8X8_PIN_NONE);  // NOT TESTED!
+//U8G2_UC1701_EA_DOGS102_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_UC1701_EA_DOGS102_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_PCD8544_84X48_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  // Nokia 5110 Display
+//U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);     // Nokia 5110 Display
+//U8G2_PCF8812_96X65_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  // Could be also PCF8814
+//U8G2_PCF8812_96X65_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);           // Could be also PCF8814
+//U8G2_HX1230_96X68_F_3W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* reset=*/ 8);
+//U8G2_HX1230_96X68_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_KS0108_128X64_F u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 18, /*dc=*/ 17, /*cs0=*/ 14, /*cs1=*/ 15, /*cs2=*/ U8X8_PIN_NONE, /* reset=*/  U8X8_PIN_NONE);   // Set R/W to low!
+//U8G2_KS0108_ERM19264_F u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 18, /*dc=*/ 17, /*cs0=*/ 14, /*cs1=*/ 15, /*cs2=*/ 16, /* reset=*/  U8X8_PIN_NONE);  // Set R/W to low!
+//U8G2_ST7920_192X32_F_8080 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 18, /*cs=*/ U8X8_PIN_NONE, /*dc=*/ 17, /*reset=*/ U8X8_PIN_NONE);
+//U8G2_ST7920_192X32_F_SW_SPI u8g2(U8G2_R0, /* clock=*/ 18 /* A4 */ , /* data=*/ 16 /* A2 */, /* CS=*/ 17 /* A3 */, /* reset=*/ U8X8_PIN_NONE);
+//U8G2_ST7920_128X64_F_8080 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 18 /* A4 */, /*cs=*/ U8X8_PIN_NONE, /*dc/rs=*/ 17 /* A3 */, /*reset=*/ 15 /* A1 */);  // Remember to set R/W to 0 
+//U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, /* clock=*/ 18 /* A4 */ , /* data=*/ 16 /* A2 */, /* CS=*/ 17 /* A3 */, /* reset=*/ U8X8_PIN_NONE);
+//U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* CS=*/ 10, /* reset=*/ 8);
+//U8G2_ST7920_128X64_F_HW_SPI u8g2(U8G2_R0, /* CS=*/ 10, /* reset=*/ 8);
+//U8G2_ST7565_EA_DOGM128_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_EA_DOGM128_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_64128N_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_64128N_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_EA_DOGM132_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ U8X8_PIN_NONE);  // DOGM132 Shield
+//U8G2_ST7565_EA_DOGM132_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ U8X8_PIN_NONE); // DOGM132 Shield
+//U8G2_ST7565_ZOLEN_128X64_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_ZOLEN_128X64_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_LM6059_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);    // Adafruit ST7565 GLCD
+//U8G2_ST7565_LM6059_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);   // Adafruit ST7565 GLCD
+//U8G2_ST7565_LX12864_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_LX12864_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_ERC12864_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_ERC12864_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_NHD_C12832_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_NHD_C12832_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_NHD_C12864_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_NHD_C12864_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_JLX12864_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_JLX12864_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7567_PI_132X64_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 7, /* dc=*/ 9, /* reset=*/ 8);  // Pax Instruments Shield, LCD_BL=6
+//U8G2_ST7567_PI_132X64_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 7, /* dc=*/ 9, /* reset=*/ 8);  // Pax Instruments Shield, LCD_BL=6
+//U8G2_ST7567_JLX12864_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 7, /* dc=*/ 9, /* reset=*/ 8);  
+//U8G2_ST7567_JLX12864_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 7, /* dc=*/ 9, /* reset=*/ 8);  
+//U8G2_ST7567_ENH_DG128064_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); 
+//U8G2_ST7567_ENH_DG128064_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); 
+//U8G2_ST7567_ENH_DG128064I_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); 
+//U8G2_ST7567_ENH_DG128064I_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); 
+//U8G2_ST7567_64X32_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); 
+//U8G2_ST75256_JLX172104_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST75256_JLX172104_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST75256_JLX256128_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  // Enable U8g2 16 bit mode for this display
+//U8G2_ST75256_JLX256128_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);   // Enable U8g2 16 bit mode for this display
+//U8G2_ST75256_JLX256128_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 9, /* data=*/ 8, /* cs=*/ 7, /* dc=*/ 6, /* reset=*/ 5);  // MKR Zero, Enable U8g2 16 bit mode for this display
+//U8G2_ST75256_JLX256128_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 7, /* dc=*/ 6, /* reset=*/ 5);  // MKR Zero, Enable U8g2 16 bit mode for this display
+//U8G2_ST75256_JLX256160_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  // Enable U8g2 16 bit mode for this display
+//U8G2_ST75256_JLX256160_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);   // Enable U8g2 16 bit mode for this display
+//U8G2_ST75256_JLX240160_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST75256_JLX240160_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST75256_JLX25664_F_2ND_HW_I2C u8g2(U8G2_R0, /* reset=*/ 8);  // Due, 2nd I2C, enable U8g2 16 bit mode for this display
+//U8G2_NT7534_TG12864R_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  
+//U8G2_NT7534_TG12864R_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  
+//U8G2_ST7588_JLX12864_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ 5);  
+//U8G2_ST7588_JLX12864_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ 5);
+//U8G2_IST3020_ERC19264_F_6800 u8g2(U8G2_R0, 44, 43, 42, 41, 40, 39, 38, 37,  /*enable=*/ 28, /*cs=*/ 32, /*dc=*/ 30, /*reset=*/ 31); // Connect WR pin with GND
+//U8G2_IST3020_ERC19264_F_8080 u8g2(U8G2_R0, 44, 43, 42, 41, 40, 39, 38, 37,  /*enable=*/ 29, /*cs=*/ 32, /*dc=*/ 30, /*reset=*/ 31); // Connect RD pin with 3.3V
+//U8G2_IST3020_ERC19264_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_LC7981_160X80_F_6800 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 18, /*cs=*/ 14, /*dc=*/ 15, /*reset=*/ 16); // Connect RW with GND
+//U8G2_LC7981_160X160_F_6800 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 18, /*cs=*/ 14, /*dc=*/ 15, /*reset=*/ 16); // Connect RW with GND
+//U8G2_LC7981_240X128_F_6800 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 18, /*cs=*/ 14, /*dc=*/ 15, /*reset=*/ 16); // Connect RW with GND
+//U8G2_LC7981_240X64_F_6800 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 18, /*cs=*/ 14, /*dc=*/ 15, /*reset=*/ 16); // Connect RW with GND
+//U8G2_SED1520_122X32_F u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*dc=*/ A0, /*e1=*/ A3, /*e2=*/ A2, /* reset=*/  A4);   // Set R/W to low!
+//U8G2_T6963_240X128_F_8080 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 17, /*cs=*/ 14, /*dc=*/ 15, /*reset=*/ 16); // Connect RD with +5V, FS0 and FS1 with GND
+//U8G2_T6963_256X64_F_8080 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 17, /*cs=*/ 14, /*dc=*/ 15, /*reset=*/ 16); // Connect RD with +5V, FS0 and FS1 with GND
+//U8G2_T6963_160X80_F_8080 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 17, /*cs=*/ 14, /*dc=*/ 15, /*reset=*/ 16); // Connect RD with +5V, FS0 and FS1 with GND
+//U8G2_SED1330_240X128_F_8080 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 17, /*cs=*/ 14, /*dc=*/ 15, /*reset=*/ 16); // Connect RD with +5V, FG with GND
+//U8G2_SED1330_240X128_F_6800 u8g2(U8G2_R0, 13, 11, 2, 3, 4, 5, 6, A4, /*enable=*/ 7, /*cs=*/ 10, /*dc=*/ 9, /*reset=*/ 8); // A0 is dc pin!
+//U8G2_RA8835_NHD_240X128_F_8080 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7, /*enable=*/ 17, /*cs=*/ 14, /*dc=*/ 15, /*reset=*/ 16); // Connect /RD = E with +5V, enable is /WR = RW, FG with GND, 14=Uno Pin A0
+//U8G2_RA8835_NHD_240X128_F_6800 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7,  /*enable=*/ 17, /*cs=*/ 14, /*dc=*/ 15, /*reset=*/ 16); // A0 is dc pin, /WR = RW = GND, enable is /RD = E
+//U8G2_UC1604_JLX19264_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); 
+//U8G2_UC1604_JLX19264_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  
+//U8G2_UC1608_ERC24064_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  // SW SPI, Due ERC24064-1 Test Setup
+//U8G2_UC1608_ERC240120_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); 
+//U8G2_UC1608_240X128_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  // SW SPI, Due ERC24064-1 Test Setup
+//U8G2_UC1610_EA_DOGXL160_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/  U8X8_PIN_NONE);
+//U8G2_UC1610_EA_DOGXL160_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/  U8X8_PIN_NONE);
+//U8G2_UC1611_EA_DOGM240_F_2ND_HW_I2C u8g2(U8G2_R0, /* reset=*/ 8); // Due, 2nd I2C, DOGM240 Test Board
+//U8G2_UC1611_EA_DOGM240_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);   // Due, SW SPI, DOGXL240 Test Board
+//U8G2_UC1611_EA_DOGXL240_F_2ND_HW_I2C u8g2(U8G2_R0, /* reset=*/ 8);  // Due, 2nd I2C, DOGXL240 Test Board
+//U8G2_UC1611_EA_DOGXL240_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);   // Due, SW SPI, DOGXL240 Test Board
+//U8G2_UC1611_EW50850_F_8080 u8g2(U8G2_R0, 8, 9, 10, 11, 4, 5, 6, 7,  /*enable=*/ 18, /*cs=*/ 3, /*dc=*/ 16, /*reset=*/ 16); // 240x160, Connect RD/WR1 pin with 3.3V, CS is aktive high
+//U8G2_UC1638_160X128_F_4W_HW_SPI u8g2(U8G2_R2, /* cs=*/ 2, /* dc=*/ 3, /* reset=*/ 4);    // Not tested
+//U8G2_SSD1606_172X72_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);   // eInk/ePaper Display
+//U8G2_SSD1607_200X200_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  // eInk/ePaper Display, original LUT from embedded artists
+//U8G2_SSD1607_GD_200X200_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); // Good Display
+//U8G2_IL3820_296X128_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8); // WaveShare 2.9 inch eInk/ePaper Display, enable 16 bit mode for this display!
+//U8G2_IL3820_V2_296X128_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);  // ePaper Display, lesser flickering and faster speed, enable 16 bit mode for this display!
+//U8G2_MAX7219_32X8_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 11, /* data=*/ 12, /* cs=*/ 10, /* dc=*/ U8X8_PIN_NONE, /* reset=*/ U8X8_PIN_NONE);
+//U8G2_MAX7219_8X8_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 11, /* data=*/ 12, /* cs=*/ 10, /* dc=*/ U8X8_PIN_NONE, /* reset=*/ U8X8_PIN_NONE);
+//U8G2_LS013B7DH03_128X128_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ U8X8_PIN_NONE, /* reset=*/ 8); // there is no DC line for this display
+//U8G2_LS027B7DH01_400X240_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ U8X8_PIN_NONE, /* reset=*/ 8); // there is no DC line for this display
+
+// End of constructor list
+
+
 
 // Wifi Settings
-char ssid[] = "<YOURWIFISSID>";  //  your network SSID (name)
-char pass[] = "<YOURWIFIPASS>";       // your network password
+char ssid[] = "<YOUR-NETWORK-SSID>";  //  your network SSID (name)
+char pass[] = "<YOUR-NETWORK-PASSWORD";       // your network password
 
 const String fName = "props.txt"; // properties file
 
@@ -116,9 +281,9 @@ MQ135 mq135_sensor = MQ135(PIN_MQ135);
 //Initialize BMP180 Barometer Sensor
 Adafruit_BMP085 bmp;
  
-// Settaggi ThingSpeak
-unsigned long myChannelNumber = <YOURTHINGSPEAKCHANNEL>;
-const char * myWriteAPIKey = "<YOURTHINGSPEAKWRITEAPIKEY>";
+// ThingSpeak Settings
+unsigned long myChannelNumber = <YOUR_THING-SPEAK_CHANNEL>;
+const char * myWriteAPIKey = "<YOUR_THING-SPEAK_WRITE_API-KEY>";
 
 // Settaggi Barometro BMP180 
 //float seaLevelPressure = 101325;
@@ -144,508 +309,9 @@ WiFiUDP udp;
 // Initialize the OLED display using Wire library
 SSD1306  display(0x3c, SDA, SCL);
 
+
+
 ESP8266WebServer server(80);
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-
-// Disegno logo aziendale in fase di BootStrap
-static unsigned char ACROBOT[] PROGMEM ={
-0x80, 0x00, 0x40, 0x00, 
-0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0x1F, 0x0F, 0x0F, 0x0F, 0x3F, 0xFF, 0x07, 0x01, 0x00, 0x00,
-0x00, 0x00, 0x01, 0x03, 0xFF, 0xFF, 0xFB, 0x07, 0x07, 0x07, 0x07, 0x07, 0xFF, 0xFF, 0xFF, 0xFF,
-0xFF, 0xFF, 0xFF, 0xFF, 0x07, 0x07, 0x07, 0x07, 0x07, 0xFB, 0xFF, 0xFF, 0x07, 0x07, 0x07, 0x07,
-0x07, 0x07, 0x07, 0x07, 0x07, 0x0F, 0x0F, 0x1F, 0x7F, 0xFF, 0x87, 0x07, 0x07, 0x07, 0x07, 0x07,
-0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0xFF, 0xFF, 0xFF, 0xFF,
-0x1F, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0xF7, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
-0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
-0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
-0x01, 0x00, 0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x80, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x3F, 0xFF, 0xFF,
-0xFF, 0xFF, 0x3F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
-0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xF8, 0x00, 0x00, 0x00, 0x01, 0xFF, 0xC0, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x7F, 0xFF, 0xFF, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xFF, 0xFF, 0xFF,
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x78, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x10, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xF0, 0xF0,
-0xF0, 0xF0, 0xF0, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0,
-0x80, 0x80, 0x80, 0xC0, 0xFE, 0xD0, 0xE0, 0x40, 0x60, 0xD0, 0xFC, 0xFF, 0xF8, 0x70, 0x30, 0x30,
-0x30, 0x78, 0xBE, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x06, 0xE0, 0x00, 0x00, 0x03, 0x7F,
-0x7F, 0x03, 0x00, 0x00, 0xC0, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
-0x3F, 0x3F, 0x3F, 0x3F, 0x1F, 0x07, 0x00, 0x00, 0x80, 0xE0, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x3F, 0x7F, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xFF, 0x07,
-0x00, 0x00, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xC0, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x03, 0x3F, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
-0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-0x01, 0x00, 0x00, 0x00, 0x3F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x03, 0xFF, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x03, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xC0, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0xC0, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
-0xF0, 0xF0, 0xF0, 0xF0, 0xC0, 0x00, 0x00, 0x02, 0x0F, 0x7F, 0xFF, 0xFF, 0xF0, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xE0, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00,
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x0F, 0x08, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
-0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-0x80, 0x00, 0x00, 0x80, 0xFC, 0x80, 0x00, 0x00, 0x00, 0x80, 0xC0, 0xFF, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0xC0, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFC, 0xE0, 0xE0,
-0xE0, 0xE0, 0xFC, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
-0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x80, 0x00, 0x00, 0x03, 0x1F, 0xFF, 0xF8, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFE, 0xFF, 0xFF, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xE0,
-0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
-0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-0x01, 0x00, 0x00, 0x01, 0xFF, 0x07, 0x03, 0x03, 0x07, 0x0E, 0x3F, 0xFF, 0x1F, 0x0E, 0x0C, 0x0C,
-0x0C, 0x3E, 0x7D, 0xFF, 0xFF, 0xFF, 0xFF, 0xE0, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF, 0xE0, 0xE0, 0xE0, 0xE0,
-0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE0, 0xE0, 0xE0, 0xE0, 0xEF, 0xFF, 0xDC, 0xE0,
-0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0xE0, 0xE0, 0xE0, 0xE0,
-0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE1, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF,
-0xFF, 0xFF, 0xFF, 0xFF, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-0x80, 0x00, 0x00, 0x00, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x03, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-0xFF, 0xFF, 0x00, 0x00, 0x07, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x78, 0x00,
-0x00, 0xCC, 0xCC, 0xFF, 0xE0, 0x01, 0x01, 0x80, 0x00, 0xF8, 0xFC, 0x00, 0x00, 0x7F, 0xFF, 0x00,
-0x00, 0x00, 0x00, 0x00, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x88, 0x88, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
-0x00, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x08, 0x08, 0x00, 0x00, 0x00, 0xC0, 0xF0,
-0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xF8, 0xF0, 0xF0, 0xF8, 0xFC, 0xFF, 0xC0, 0x80, 0x00, 0x00,
-0x00, 0x00, 0x80, 0xC0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-0xFF, 0xFF, 0xF8, 0xF8, 0xFE, 0xF8, 0xF8, 0xF8, 0xF8, 0xFF, 0xF8, 0xF8, 0xF8, 0xFC, 0xF8, 0xF8,
-0xF8, 0xF8, 0xF8, 0xF9, 0xFF, 0xF8, 0xF8, 0xFF, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xFC,
-0xF8, 0xF8, 0xFE, 0xF8, 0xFB, 0xFE, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8,
-0xF8, 0xF8, 0xFE, 0xF8, 0xF8, 0xFF, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xFC, 0xF8, 0xF8, 0xF8,
-0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xFC, 0xF8, 0xF8, 0xF8, 0xFC, 0xF8, 0xF8, 0xFF, 0xFF,
-0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-};
-
-#define SUN  0
-#define SUN_CLOUD  1
-#define CLOUD 2
-#define RAIN 3
-#define THUNDER 4
-#define TEMPERATUREDAY 5
-#define HUMIDITY 6
-#define PRESSURE 7
-#define AIRQ 8
-#define DEWPT 9
-#define TEMPERATURENIGHT 10
-
-
-void setup() {
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println();
-  Serial.println("WEATHER STATION - Temperature, Pressure, Humidity, Air Quality using Sensors DHT22, MQ135 and BMP180 - Powered By MR WATT");
-  Serial.println("BootStrap...");
-  
-  //display.init();
-  display.flipScreenVertically();
-  display.setFont(ArialMT_Plain_16);
-  display.setTextAlignment(TEXT_ALIGN_LEFT);
-
-  // We start by connecting to a WiFi network
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, pass);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-
-  // create and/or read properties file
-  initPropFile();
-
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  Serial.println("Starting UDP");
-  udp.begin(localPort);
-  Serial.print("Local port: ");
-  Serial.println(udp.localPort());
-
-  server.on("/", handle_root);
-  server.on("/submit", handle_submit);
-  server.on("/time", handle_time); // Used for AJAX call
-  server.begin();
-  delay(100);
-
-  setDateTime();
-
-  if (secsSince1900 == 0) // try again, NTP server may not have responded in time
-    setDateTime();
-
-  
- //  Wire.begin();  
-  // Initialize Display
-  u8g2.begin();
-  u8g2.enableUTF8Print();
-  u8g2.clearBuffer(); // clear the internal memory
-  u8g2.setFlipMode(0);
-  u8g2.firstPage();
-  do {
-    drawLogo();
-    drawURL();
-  } while ( u8g2.nextPage() );
-  delay(4000);
-
-  
-  pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
-  // We start by connecting to a WiFi network
- /*
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, pass);
-*/
- // We start the I2C on the Arduino for communication with the BMP180 sensor.
-  Wire.begin();
- 
-if (!bmp.begin()) {
-  Serial.println("Could not find a valid BMP085 sensor, check wiring!");
-  while (1) {}
-  }
-
-  // DHT22 Test
-  Serial.println("Initialize DHT22...");
-  dht.begin();
-
- // Initialize ThingSpeak
-  ThingSpeak.begin(client);
-
-}
-
-
-void loop() {
- // Wait a few seconds between measurements. 
- delay(5000);
- 
- float rzero = mq135_sensor.getRZero();
- float temperature = dht.readTemperature();
- float humidity = dht.readHumidity();
- float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
- float resistance = mq135_sensor.getResistance();
- float ppm = mq135_sensor.getPPM();
- float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
- float sensorVoltage; 
- float sensorValue;
- long currentPressure = bmp.readPressure();
- float currentAltitude = bmp.readAltitude(seaLevelPressure);
- float currentTemperature = bmp.readTemperature();
- float currentSealevelPressure = bmp.readSealevelPressure();
- int currentPressurehPA = int(bmp.readPressure()/100);
-unsigned int raw=0;
- float volt=0.0;
- // Time to sleep (in seconds):
- const int sleepTimeS = 60;
- String oledTemp;
-String oledHum;
-String oledPressure;
-String oledPPM;
-String oledDew;
-oledTemp = currentTemperature;
-oledHum = humidity;
-oledPressure = currentPressurehPA;
-oledPPM = ppm;
-oledDew = dewpt;
- 
- // Check if any reads failed and exit early (to try again).
-  if (isnan(humidity) || isnan(temperature)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return;
-  }
-  // Compute heat index in Celsius (isFahreheit = false)
-  float hic = dht.computeHeatIndex(temperature, humidity, false);
-
- sensorValue = analogRead(A0);
- sensorVoltage = sensorValue/1024*5.0;
- float dewpt = 0;
- dewpt = (dewPoint(temperature, humidity));
- 
- Serial.print("\t");   
- Serial.print("\t Temperature DHT22: ");
- Serial.print(temperature);
- Serial.print("C ");
- Serial.print("\t Humidity: "); 
- Serial.print(humidity);
- Serial.print("%");
- Serial.print("\t Sensor Voltage: ");
- Serial.print(sensorVoltage);
- Serial.print("V");
- Serial.print("\t MQ135 RZero: ");
- Serial.print(rzero);
- Serial.print("\t Corrected RZero: ");
- Serial.print(correctedRZero);
- Serial.print("\t Resistance: ");
- Serial.print(resistance);
- Serial.print("\t PPM: ");
- Serial.print(ppm);
- Serial.print("\t Corrected PPM: ");
- Serial.print(correctedPPM);
- Serial.println("ppm");
- Serial.print("\t Altitude: ");
- Serial.print(currentAltitude);
- Serial.print("m ");
- Serial.print("\t Pressure: ");
- Serial.print(currentPressure);
- Serial.print("Pa ");
- Serial.print("\t Temperature BMP180: ");
- Serial.print(currentTemperature);
- Serial.print("C");
- Serial.print("\t Pressure Sealevel BMP180: ");
- Serial.print(currentSealevelPressure);
- Serial.print("m ");
- Serial.print("\t Dew Point: ");
- Serial.print(dewpt);
- Serial.print(hour());
-// Serial.print("\t Battery Spanning: ");
-// Serial.print(getVoltage());
-// Serial.print("V ");
-// Serial.print("\t Battery Level: ");
-// Serial.print(getLevel());
-// Serial.print("% ");
- 
- // Write to ThingSpeak
-   ThingSpeak.setField(1,temperature);
-   ThingSpeak.setField(2,humidity);
-   ThingSpeak.setField(3,currentPressurehPA);
-   ThingSpeak.setField(4,ppm);
-   ThingSpeak.setField(5,getVoltage());
-   ThingSpeak.setField(6,dewpt);
-   ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);  
-
-// draw("Temperature (Celsius) ...", TEMPERATURE, int(currentTemperature));
- if ( hour() > 6 && hour() < 19 ) {draw("Temperature (Celsius) ...", TEMPERATUREDAY, int(currentTemperature));}
- if ( hour() > 19 && hour() < 6 ) {draw("Temperature (Celsius) ...", TEMPERATURENIGHT, int(currentTemperature));}
-
-draw("Humidity (%) ...", HUMIDITY, int(humidity));
-draw("Pressure (hPa) ...", PRESSURE, int(currentPressurehPA));
- if ( correctedPPM > 1 && correctedPPM < 700 ) {draw("Air Quality (PPM)... >>>EXCELLENT<<<", AIRQ, int(ppm));}
- if ( correctedPPM > 700 && correctedPPM < 800 ) {draw("Air Quality (PPM)... >>>GOOD<<<", AIRQ, int(ppm));}
- if ( correctedPPM > 800 && correctedPPM < 1000 ) {draw("Air Quality (PPM)... >>>FAIR<<<", AIRQ, int(ppm));}
- if ( correctedPPM > 1000 && correctedPPM < 1500 ) {draw("Air Quality (PPM)... >>>!MEDIOCRE!<<<", AIRQ, int(ppm));}
- if ( correctedPPM > 1500 && correctedPPM < 2000 ) {draw("Air Quality (PPM)... >>>!!BAD!!<<<", AIRQ, int(ppm));}
- if ( correctedPPM > 2000 && correctedPPM < 50000 ) {draw("Air Quality (PPM)... >>>!!!TOXIC!!!<<<", AIRQ, int(ppm));}
- if ( correctedPPM > 50000 || correctedPPM == 0 ) {draw("Air Quality (PPM)... >>>!PREHEAT MQ135!<<<", AIRQ, int(ppm));}
-// draw("Air Quality (PPM) ...", AIRQ, int(ppm));
-draw("Dew Point (Celsius) ...", DEWPT, int(dewpt));
-
- currentMillis = millis();
-
-  String AmPm = "";
-
-  // How much time has passed, accounting for rollover with subtraction!
-  if ((unsigned long)(currentMillis - lastMillis) >= interval )
-  {
-    setDateTime();
-  }
-
-  // setup the time and dateString
-
-  int thour = hour();
-
-  if (!hourTime) // if not 24 hour time
-  {
-    AmPm = "AM";
-    if (thour > 12)
-    {
-      thour = thour - 12;
-      AmPm = "PM";
-    }
-    else
-    {
-      AmPm = "AM";
-      if (thour == 12)
-        AmPm = "PM";
-    }
-    if (thour == 0)
-      thour = 12;
-  }
-  timeStr = thour;
-
-  Serial.print("The time is ");
-  Serial.print(hour());
-  Serial.print(':');
-  timeStr += ":";
-
-  if ( minute() < 10 ) {
-    // In the first 10 minutes of each hour, we'll want a leading '0'
-    Serial.print('0');
-    timeStr += "0";
-  }
-
-  Serial.print(minute());
-
-  timeStr += minute();
-  Serial.print(':');
-  timeStr += ":";
-
-  if ( second() < 10 ) {
-    // In the first 10 seconds of each minute, we'll want a leading '0'
-    Serial.print('0');
-    timeStr += "0";
-  }
-
-  Serial.println(second());
-
-  timeStr += second();
-  timeStr += " " + AmPm;
-
-  dateStr = day();
-  dateStr += "/" ;
-  dateStr += month();
-  dateStr += "/";
-  dateStr += year();
-
-  Serial.println(dateStr);
-
- // display.clear();
-//  display.drawString(0, 0,  timeStr);
-//  display.drawString(0, 19, dateStr);
-//  display.drawString(0, 40, WiFi.localIP().toString());
-
- // display.display();
-
-  server.handleClient();
-//  delay(1000); // delay one second before OLED display update
-//u8g2.sendBuffer();          // transfer internal memory to the display
-delay(10000);
-
-}
-
-// This is section the function that the interrupt calls to increment the rotation count
-//-------------------------------------------------------------------------------------------------------------
-////////////////////////////////////FUNCTIONS//////////////////////////////////////////////////////////////
-//-------------------------------------------------------------------------------------------------------------
-
-
-// Functions
-
-// Print Wifi Status
-
-void printWifiStatus() {
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
-
-  // print your WiFi shield's IP address:
-  IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
-
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
-}
-
-float getVoltage(){
-  float raw = analogRead(A0);                      
-  float volt = map(raw, 140, 227, 338, 511);             // Avec une résistance 1M5 - With a 1M5 resistor
-  volt = volt / 100;
- // Serial.print("\tA0 "); Serial.println(raw);
-  Serial.print("\tVoltage "); Serial.println(volt);
-  return volt;
-}
-
-/*
-float getLevel(){
-  float raw = analogRead(A0);
-  int level = map(raw, 140, 227, 0, 100);                // Avec une résistance 1M5 - With a 1M5 resistor
-  if ( level < 0 ) { level = 0; }
-  if ( level > 100 ) { level = 100; }
-  Serial.print("Level: "); Serial.println(level);
-  return level;
-}
-*/
-
-void drawLogo(void)
-{
-  uint8_t mdy = 0;
-  if ( u8g2.getDisplayHeight() < 59 )
-    mdy = 5;
- 
-    u8g2.setFontMode(1);  // Transparent
-    u8g2.setDrawColor(1);
-#ifdef MINI_LOGO
-
-    u8g2.setFontDirection(0);
-    u8g2.setFont(u8g2_font_inb16_mf);
-    u8g2.drawStr(0, 22, "M");
-    u8g2.drawStr(14, 22, "R");
-    u8g2.drawStr(28, 22, " ");
-    u8g2.drawStr(42, 22, "W");
-    u8g2.drawStr(56, 22, "A");
-    u8g2.drawStr(70, 22, "T");
-    u8g2.drawStr(84, 22, "T");
-    u8g2.drawHLine(2, 22, 109);
-    u8g2.drawHLine(3, 22, 109);
-    u8g2.drawVLine(107, 22, 12);
-    u8g2.drawVLine(108, 22, 12);
-#else
-
-    u8g2.setFontDirection(0);
-    u8g2.setFont(u8g2_font_inb24_mf);
-    u8g2.drawStr(0, 30-mdy, "M");
-    u8g2.drawStr(14, 30-mdy, "R");
-    u8g2.drawStr(28, 30-mdy, " ");
-    u8g2.drawStr(42, 30-mdy, "W");
-    u8g2.drawStr(56, 30-mdy, "A");
-    u8g2.drawStr(70, 30-mdy, "T");
-    u8g2.drawStr(84, 30-mdy, "T");
-    u8g2.drawHLine(2, 35-mdy, 109);
-    u8g2.drawHLine(3, 36-mdy, 109);
-    u8g2.drawVLine(107, 32-mdy, 12);
-    u8g2.drawVLine(108, 33-mdy, 12);
-    
-#endif
-}
-
-void drawURL(void)
-{
-  String oledIPADDR;
-  String oledWiFiSSID;
-  oledIPADDR = WiFi.localIP().toString();
-  oledWiFiSSID = WiFi.SSID();
-#ifndef MINI_LOGO
-  u8g2.setFont(u8g2_font_4x6_tr);
-  //u8g2.setDrawColor(2);
-
-  if ( u8g2.getDisplayHeight() < 59 )
-  {
-    u8g2.drawStr(89,20-5,"https://www.mrwatt.eu");
-    u8g2.drawStr(73,29-5,"/");
-  }
-  else
-  {
-    u8g2.drawStr(1, 50, "https://www.mrwatt.eu");
-    u8g2.drawStr(1, 57, "IP Address:");
-    u8g2.drawStr(49, 57, oledIPADDR.c_str());
-    u8g2.drawStr(1, 64, "SSID:");
-    u8g2.drawStr(35, 64, oledWiFiSSID.c_str());
-  }
-#endif
-}
-
-// Dew Point function
-  double dewPoint(double temperature, double humidity) //Calculate dew Point
-{
-  double A0= 373.15/(273.15 + temperature);
-  double SUM = -7.90298 * (A0-1);
-  SUM += 5.02808 * log10(A0);
-  SUM += -1.3816e-7 * (pow(10, (11.344*(1-1/A0)))-1) ;
-  SUM += 8.1328e-3 * (pow(10,(-3.49149*(A0-1)))-1) ;
-  SUM += log10(1013.246);
-  double VP = pow(10, SUM-3) * humidity;
-  double T = log(VP/0.61078);   
-  return (241.88 * T) / (17.558-T);
-}
-
 
 ///////////////////////////////////////////////////////////////////////////
 // Time functions
@@ -684,7 +350,7 @@ void setDateTime()
 
   unsigned long epoch;
 
-  Serial.print(".....Updating Time.....");
+  Serial.print("\t .....Updating Time.....");
 
  // display.clear();
  // display.drawString(0, 0,  timeStr);
@@ -703,7 +369,7 @@ void setDateTime()
 
   int cb = udp.parsePacket();
   if (!cb) {
-    Serial.println("no packet yet");
+    Serial.println("\t no packet yet");
   }
   else {
     Serial.print("packet received, length=");
@@ -975,7 +641,12 @@ String setHTML()
   webString += "</td></tr></table>\n";
 
   webString += "<div><a href=\"/\">Refresh</a></div> \n";
+ // webString += "<table style=\"width:100%\"><tr><tr><th>Firstname</th><th>Lastname</th><th>Age</th></tr><tr><td>Jill</td><td>Smith</td><td>50</td></tr><tr><td>Eve</td><td>Jackson</td><td>94</td></tr></table>\n";
+  webString +="<!DOCTYPE html><html><head><style>table\ {\ font-family:\ arial,\ sans-serif;\ border-collapse:\ collapse;\ width:\ 100%;\ }\ td,\ th\ {\ border:\ 1px\ solid\ #dddddd;\ text-align:\ left;\ padding:\ 8px;\ }\ tr:nth-child(even)\ {\ background-color:\ #dddddd;\ }</style></head><body><h2>HTML Table</h2><table><tr><th>Company</th><th>Contact</th><th>Country</th></tr><tr><td>Alfreds Futterkiste</td><td>Maria Anders</td><td>Germany</td></tr><tr><td>Centro comercial Moctezuma</td><td>Francisco Chang</td><td>Mexico</td></tr><tr><td>Ernst Handel</td><td>Roland Mendel</td><td>Austria</td></tr><tr><td>Island Trading</td><td>Helen Bennett</td><td>UK</td></tr><tr><td>Laughing Bacchus Winecellars</td><td>Yoshi Tannamuri</td><td>Canada</td></tr><tr><td>Magazzini Alimentari Riuniti</td><td>Giovanni Rovelli</td><td>Italy</td></tr></table></body></html>\n";
+  
   webString += "</form></body></html>\n";
+  
+
   return webString;
 }
 
@@ -1160,6 +831,510 @@ void handle_root() {
 
 
 
+////////////////////////////////////////////////////////////////////////////////////////
+
+// Disegno logo aziendale in fase di BootStrap
+static unsigned char ACROBOT[] PROGMEM ={
+0x80, 0x00, 0x40, 0x00, 
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0x1F, 0x0F, 0x0F, 0x0F, 0x3F, 0xFF, 0x07, 0x01, 0x00, 0x00,
+0x00, 0x00, 0x01, 0x03, 0xFF, 0xFF, 0xFB, 0x07, 0x07, 0x07, 0x07, 0x07, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0x07, 0x07, 0x07, 0x07, 0x07, 0xFB, 0xFF, 0xFF, 0x07, 0x07, 0x07, 0x07,
+0x07, 0x07, 0x07, 0x07, 0x07, 0x0F, 0x0F, 0x1F, 0x7F, 0xFF, 0x87, 0x07, 0x07, 0x07, 0x07, 0x07,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0xFF, 0xFF, 0xFF, 0xFF,
+0x1F, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0xF7, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
+0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
+0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
+0x01, 0x00, 0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x80, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x3F, 0xFF, 0xFF,
+0xFF, 0xFF, 0x3F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
+0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xF8, 0x00, 0x00, 0x00, 0x01, 0xFF, 0xC0, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x7F, 0xFF, 0xFF, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xFF, 0xFF, 0xFF,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x78, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x10, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xF0, 0xF0,
+0xF0, 0xF0, 0xF0, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0,
+0x80, 0x80, 0x80, 0xC0, 0xFE, 0xD0, 0xE0, 0x40, 0x60, 0xD0, 0xFC, 0xFF, 0xF8, 0x70, 0x30, 0x30,
+0x30, 0x78, 0xBE, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x06, 0xE0, 0x00, 0x00, 0x03, 0x7F,
+0x7F, 0x03, 0x00, 0x00, 0xC0, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
+0x3F, 0x3F, 0x3F, 0x3F, 0x1F, 0x07, 0x00, 0x00, 0x80, 0xE0, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x3F, 0x7F, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xFF, 0x07,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xC0, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x03, 0x3F, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0x01, 0x00, 0x00, 0x00, 0x3F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x03, 0xFF, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x03, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xC0, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0xC0, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
+0xF0, 0xF0, 0xF0, 0xF0, 0xC0, 0x00, 0x00, 0x02, 0x0F, 0x7F, 0xFF, 0xFF, 0xF0, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xE0, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x0F, 0x08, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x7F, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0x80, 0x00, 0x00, 0x80, 0xFC, 0x80, 0x00, 0x00, 0x00, 0x80, 0xC0, 0xFF, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0xC0, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFC, 0xE0, 0xE0,
+0xE0, 0xE0, 0xFC, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x80, 0x00, 0x00, 0x03, 0x1F, 0xFF, 0xF8, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFE, 0xFF, 0xFF, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xC0, 0xE0,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0x01, 0x00, 0x00, 0x01, 0xFF, 0x07, 0x03, 0x03, 0x07, 0x0E, 0x3F, 0xFF, 0x1F, 0x0E, 0x0C, 0x0C,
+0x0C, 0x3E, 0x7D, 0xFF, 0xFF, 0xFF, 0xFF, 0xE0, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF, 0xE0, 0xE0, 0xE0, 0xE0,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE0, 0xE0, 0xE0, 0xE0, 0xEF, 0xFF, 0xDC, 0xE0,
+0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0xE0, 0xE0, 0xE0, 0xE0,
+0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE1, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xE0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0x80, 0x00, 0x00, 0x00, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x03, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0x00, 0x00, 0x07, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x78, 0x00,
+0x00, 0xCC, 0xCC, 0xFF, 0xE0, 0x01, 0x01, 0x80, 0x00, 0xF8, 0xFC, 0x00, 0x00, 0x7F, 0xFF, 0x00,
+0x00, 0x00, 0x00, 0x00, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x88, 0x88, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+0x00, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x08, 0x08, 0x00, 0x00, 0x00, 0xC0, 0xF0,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xF8, 0xF0, 0xF0, 0xF8, 0xFC, 0xFF, 0xC0, 0x80, 0x00, 0x00,
+0x00, 0x00, 0x80, 0xC0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xF8, 0xF8, 0xFE, 0xF8, 0xF8, 0xF8, 0xF8, 0xFF, 0xF8, 0xF8, 0xF8, 0xFC, 0xF8, 0xF8,
+0xF8, 0xF8, 0xF8, 0xF9, 0xFF, 0xF8, 0xF8, 0xFF, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xFC,
+0xF8, 0xF8, 0xFE, 0xF8, 0xFB, 0xFE, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8,
+0xF8, 0xF8, 0xFE, 0xF8, 0xF8, 0xFF, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xFC, 0xF8, 0xF8, 0xF8,
+0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xFC, 0xF8, 0xF8, 0xF8, 0xFC, 0xF8, 0xF8, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+};
+
+#define SUN  0
+#define SUN_CLOUD  1
+#define CLOUD 2
+#define RAIN 3
+#define THUNDER 4
+#define TEMPERATUREDAY 5
+#define HUMIDITY 6
+#define PRESSURE 7
+#define AIRQ 8
+#define DEWPT 9
+#define TEMPERATURENIGHT 10
+
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println();
+  Serial.println();
+  Serial.println("WEATHER STATION - Temperature, Pressure, Humidity, Air Quality using Sensors DHT22, MQ135 and BMP180 - Powered By MR WATT");
+  Serial.println("BootStrap...");
+  
+  //display.init();
+ // display.flipScreenVertically();
+ // display.setFont(ArialMT_Plain_16);
+ // display.setTextAlignment(TEXT_ALIGN_LEFT);
+
+  // We start by connecting to a WiFi network
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, pass);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+
+  // create and/or read properties file
+  initPropFile();
+
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  Serial.println("Starting UDP");
+  udp.begin(localPort);
+  Serial.print("Local port: ");
+  Serial.println(udp.localPort());
+
+  server.on("/", handle_root);
+  server.on("/submit", handle_submit);
+  server.on("/time", handle_time); // Used for AJAX call
+  server.begin();
+  delay(100);
+
+  setDateTime();
+
+  if (secsSince1900 == 0) // try again, NTP server may not have responded in time
+    setDateTime();
+
+  
+ //  Wire.begin();  
+  // Initialize Display
+  u8g2.begin();
+  u8g2.enableUTF8Print();
+  u8g2.clearBuffer(); // clear the internal memory
+  u8g2.setFlipMode(0);
+  u8g2.firstPage();
+  do {
+    drawLogo();
+    drawURL();
+  } while ( u8g2.nextPage() );
+  delay(4000);
+
+  
+  pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
+  // We start by connecting to a WiFi network
+ /*
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, pass);
+*/
+ // We start the I2C on the Arduino for communication with the BMP180 sensor.
+  Wire.begin();
+ 
+if (!bmp.begin()) {
+  Serial.println("Could not find a valid BMP085 sensor, check wiring!");
+  while (1) {}
+  }
+
+  // DHT22 Test
+  Serial.println("Initialize DHT22...");
+  dht.begin();
+
+ // Initialize ThingSpeak
+  ThingSpeak.begin(client);
+
+}
+
+
+void loop() {
+ // Wait a few seconds between measurements. 
+ delay(5000);
+ 
+ float rzero = mq135_sensor.getRZero();
+ float temperature = dht.readTemperature();
+ float humidity = dht.readHumidity();
+ float correctedRZero = mq135_sensor.getCorrectedRZero(temperature, humidity);
+ float resistance = mq135_sensor.getResistance();
+ float ppm = mq135_sensor.getPPM();
+ float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
+ float sensorVoltage; 
+ float sensorValue;
+ long currentPressure = bmp.readPressure();
+ float currentAltitude = bmp.readAltitude(seaLevelPressure);
+ float currentTemperature = bmp.readTemperature();
+ float currentSealevelPressure = bmp.readSealevelPressure();
+ int currentPressurehPA = int(bmp.readPressure()/100);
+unsigned int raw=0;
+ float volt=0.0;
+ // Time to sleep (in seconds):
+ const int sleepTimeS = 60;
+ String oledTemp;
+String oledHum;
+String oledPressure;
+String oledPPM;
+String oledDew;
+ float dewpt = 0;
+
+oledTemp = currentTemperature;
+oledHum = humidity;
+oledPressure = currentPressurehPA;
+oledPPM = ppm;
+oledDew = dewpt;
+
+
+currentMillis = millis();
+
+  String AmPm = "";
+
+  // How much time has passed, accounting for rollover with subtraction!
+  if ((unsigned long)(currentMillis - lastMillis) >= interval )
+  {
+    setDateTime();
+  }
+
+  // setup the time and dateString
+
+  int thour = hour();
+
+  if (!hourTime) // if not 24 hour time
+  {
+    AmPm = "AM";
+    if (thour > 12)
+    {
+      thour = thour - 12;
+      AmPm = "PM";
+    }
+    else
+    {
+      AmPm = "AM";
+      if (thour == 12)
+        AmPm = "PM";
+    }
+    if (thour == 0)
+      thour = 12;
+  }
+  timeStr = thour;
+
+  Serial.print("The time is ");
+  Serial.print(hour());
+  Serial.print(':');
+  timeStr += ":";
+
+  if ( minute() < 10 ) {
+    // In the first 10 minutes of each hour, we'll want a leading '0'
+    Serial.print('0');
+    timeStr += "0";
+  }
+
+  Serial.print(minute());
+
+  timeStr += minute();
+  Serial.print(':');
+  timeStr += ":";
+
+  if ( second() < 10 ) {
+    // In the first 10 seconds of each minute, we'll want a leading '0'
+    Serial.print('0');
+    timeStr += "0";
+  }
+
+  Serial.println(second());
+
+  timeStr += second();
+  timeStr += " " + AmPm;
+
+  dateStr = day();
+  dateStr += "/" ;
+  dateStr += month();
+  dateStr += "/";
+  dateStr += year();
+
+  Serial.println(dateStr);
+
+ // display.clear();
+//  display.drawString(0, 0,  timeStr);
+//  display.drawString(0, 19, dateStr);
+//  display.drawString(0, 40, WiFi.localIP().toString());
+
+ // display.display();
+
+  server.handleClient();
+
+ delay(1000);
+
+ // Check if any reads failed and exit early (to try again).
+  if (isnan(humidity) || isnan(temperature)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
+  // Compute heat index in Celsius (isFahreheit = false)
+  float hic = dht.computeHeatIndex(temperature, humidity, false);
+
+ sensorValue = analogRead(A0);
+ sensorVoltage = sensorValue/1024*5.0;
+
+ dewpt = (dewPoint(temperature, humidity));
+ 
+ Serial.print("\t");   
+ Serial.print("\t Temperature DHT22: ");
+ Serial.print(temperature);
+ Serial.print("C ");
+ Serial.print("\t Humidity: "); 
+ Serial.print(humidity);
+ Serial.print("%");
+ Serial.print("\t Sensor Voltage: ");
+ Serial.print(sensorVoltage);
+ Serial.print("V");
+ Serial.print("\t MQ135 RZero: ");
+ Serial.print(rzero);
+ Serial.print("\t Corrected RZero: ");
+ Serial.print(correctedRZero);
+ Serial.print("\t Resistance: ");
+ Serial.print(resistance);
+ Serial.print("\t PPM: ");
+ Serial.print(ppm);
+ Serial.print("\t Corrected PPM: ");
+ Serial.print(correctedPPM);
+ Serial.println("ppm");
+ Serial.print("\t Altitude: ");
+ Serial.print(currentAltitude);
+ Serial.print("m ");
+ Serial.print("\t Pressure: ");
+ Serial.print(currentPressure);
+ Serial.print("Pa ");
+ Serial.print("\t Temperature BMP180: ");
+ Serial.print(currentTemperature);
+ Serial.print("C");
+ Serial.print("\t Pressure Sealevel BMP180: ");
+ Serial.print(currentSealevelPressure);
+ Serial.print("m ");
+ Serial.print("\t Dew Point: ");
+ Serial.print(dewpt);
+ Serial.print(hour());
+// Serial.print("\t Battery Spanning: ");
+// Serial.print(getVoltage());
+// Serial.print("V ");
+// Serial.print("\t Battery Level: ");
+// Serial.print(getLevel());
+// Serial.print("% ");
+ 
+ // Write to ThingSpeak
+   ThingSpeak.setField(1,temperature);
+   ThingSpeak.setField(2,humidity);
+   ThingSpeak.setField(3,currentPressurehPA);
+   ThingSpeak.setField(4,ppm);
+   ThingSpeak.setField(5,getVoltage());
+   ThingSpeak.setField(6,dewpt);
+   ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);  
+
+// draw("Temperature (Celsius) ...", TEMPERATURE, int(currentTemperature));
+ if ( hour() > 6 && hour() < 19 ) {draw("Temperature (Celsius) ...", TEMPERATUREDAY, int(currentTemperature));}
+ if ( hour() > 19 && hour() < 6 ) {draw("Temperature (Celsius) ...", TEMPERATURENIGHT, int(currentTemperature));}
+
+draw("Humidity (%) ...", HUMIDITY, int(humidity));
+draw("Pressure (hPa) ...", PRESSURE, int(currentPressurehPA));
+ if ( correctedPPM > 1 && correctedPPM < 700 ) {draw("Air Quality (PPM)... >>>EXCELLENT<<<", AIRQ, int(ppm));}
+ if ( correctedPPM > 700 && correctedPPM < 800 ) {draw("Air Quality (PPM)... >>>GOOD<<<", AIRQ, int(ppm));}
+ if ( correctedPPM > 800 && correctedPPM < 1000 ) {draw("Air Quality (PPM)... >>>FAIR<<<", AIRQ, int(ppm));}
+ if ( correctedPPM > 1000 && correctedPPM < 1500 ) {draw("Air Quality (PPM)... >>>!MEDIOCRE!<<<", AIRQ, int(ppm));}
+ if ( correctedPPM > 1500 && correctedPPM < 2000 ) {draw("Air Quality (PPM)... >>>!!BAD!!<<<", AIRQ, int(ppm));}
+ if ( correctedPPM > 2000 && correctedPPM < 50000 ) {draw("Air Quality (PPM)... >>>!!!TOXIC!!!<<<", AIRQ, int(ppm));}
+ if ( correctedPPM > 50000 || correctedPPM == 0 ) {draw("Air Quality (PPM)... >>>!PREHEAT MQ135!<<<", AIRQ, int(ppm));}
+// draw("Air Quality (PPM) ...", AIRQ, int(ppm));
+draw("Dew Point (Celsius) ...", DEWPT, int(dewpt));
+
+ 
+//  delay(1000); // delay one second before OLED display update
+//u8g2.sendBuffer();          // transfer internal memory to the display
+delay(10000);
+
+}
+
+// This is section the function that the interrupt calls to increment the rotation count
+//-------------------------------------------------------------------------------------------------------------
+////////////////////////////////////FUNCTIONS//////////////////////////////////////////////////////////////
+//-------------------------------------------------------------------------------------------------------------
+
+
+// Functions
+
+// Print Wifi Status
+
+void printWifiStatus() {
+  // print the SSID of the network you're attached to:
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  // print your WiFi shield's IP address:
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+
+  // print the received signal strength:
+  long rssi = WiFi.RSSI();
+  Serial.print("signal strength (RSSI):");
+  Serial.print(rssi);
+  Serial.println(" dBm");
+}
+
+float getVoltage(){
+  float raw = analogRead(A0);                      
+  float volt = map(raw, 140, 227, 338, 511);             // Avec une résistance 1M5 - With a 1M5 resistor
+  volt = volt / 100;
+ // Serial.print("\tA0 "); Serial.println(raw);
+  Serial.print("\tVoltage "); Serial.println(volt);
+  return volt;
+}
+
+/*
+float getLevel(){
+  float raw = analogRead(A0);
+  int level = map(raw, 140, 227, 0, 100);                // Avec une résistance 1M5 - With a 1M5 resistor
+  if ( level < 0 ) { level = 0; }
+  if ( level > 100 ) { level = 100; }
+  Serial.print("Level: "); Serial.println(level);
+  return level;
+}
+*/
+
+void drawLogo(void)
+{
+  uint8_t mdy = 0;
+  if ( u8g2.getDisplayHeight() < 59 )
+    mdy = 5;
+ 
+    u8g2.setFontMode(1);  // Transparent
+    u8g2.setDrawColor(1);
+#ifdef MINI_LOGO
+
+    u8g2.setFontDirection(0);
+    u8g2.setFont(u8g2_font_inb16_mf);
+    u8g2.drawStr(0, 22, "M");
+    u8g2.drawStr(14, 22, "R");
+    u8g2.drawStr(28, 22, " ");
+    u8g2.drawStr(42, 22, "W");
+    u8g2.drawStr(56, 22, "A");
+    u8g2.drawStr(70, 22, "T");
+    u8g2.drawStr(84, 22, "T");
+    u8g2.drawHLine(2, 22, 109);
+    u8g2.drawHLine(3, 22, 109);
+    u8g2.drawVLine(107, 22, 12);
+    u8g2.drawVLine(108, 22, 12);
+#else
+
+    u8g2.setFontDirection(0);
+    u8g2.setFont(u8g2_font_inb24_mf);
+    u8g2.drawStr(0, 30-mdy, "M");
+    u8g2.drawStr(14, 30-mdy, "R");
+    u8g2.drawStr(28, 30-mdy, " ");
+    u8g2.drawStr(42, 30-mdy, "W");
+    u8g2.drawStr(56, 30-mdy, "A");
+    u8g2.drawStr(70, 30-mdy, "T");
+    u8g2.drawStr(84, 30-mdy, "T");
+    u8g2.drawHLine(2, 35-mdy, 109);
+    u8g2.drawHLine(3, 36-mdy, 109);
+    u8g2.drawVLine(107, 32-mdy, 12);
+    u8g2.drawVLine(108, 33-mdy, 12);
+    
+#endif
+}
+
+void drawURL(void)
+{
+  String oledIPADDR;
+  String oledWiFiSSID;
+  oledIPADDR = WiFi.localIP().toString();
+  oledWiFiSSID = WiFi.SSID();
+#ifndef MINI_LOGO
+  u8g2.setFont(u8g2_font_4x6_tr);
+  //u8g2.setDrawColor(2);
+
+  if ( u8g2.getDisplayHeight() < 59 )
+  {
+    u8g2.drawStr(89,20-5,"https://www.mrwatt.eu");
+    u8g2.drawStr(73,29-5,"/");
+  }
+  else
+  {
+    u8g2.drawStr(1, 50, "https://www.mrwatt.eu");
+    u8g2.drawStr(1, 57, "IP Address:");
+    u8g2.drawStr(49, 57, oledIPADDR.c_str());
+    u8g2.drawStr(1, 64, "SSID:");
+    u8g2.drawStr(35, 64, oledWiFiSSID.c_str());
+  }
+#endif
+}
+
+// Dew Point function
+  double dewPoint(double temperature, double humidity) //Calculate dew Point
+{
+  double A0= 373.15/(273.15 + temperature);
+  double SUM = -7.90298 * (A0-1);
+  SUM += 5.02808 * log10(A0);
+  SUM += -1.3816e-7 * (pow(10, (11.344*(1-1/A0)))-1) ;
+  SUM += 8.1328e-3 * (pow(10,(-3.49149*(A0-1)))-1) ;
+  SUM += log10(1013.246);
+  double VP = pow(10, SUM-3) * humidity;
+  double T = log(VP/0.61078);   
+  return (241.88 * T) / (17.558-T);
+}
+
 void drawWeatherSymbol(u8g2_uint_t x, u8g2_uint_t y, uint8_t symbol)
 {
   // fonts used:
@@ -1264,8 +1439,6 @@ void drawWeather(uint8_t symbol, int degree)
       break;
   }
 }
-
-
 
 /*
   Draw a string with specified pixel offset. 
