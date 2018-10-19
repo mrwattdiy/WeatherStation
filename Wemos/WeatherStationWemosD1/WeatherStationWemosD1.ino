@@ -84,11 +84,9 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SD
 
 
 // Wifi Settings
-char ssid[] = "VodafoneSurfer";  //  your network SSID (name)
-char pass[] = "B311a@P3r.Te";       // your network password
 
-//char ssid[] = "<YOUR-NETWORK-SSID>";  //  your network SSID (name)
-//char pass[] = "<YOUR-NETWORK-PASSWORD";       // your network password
+char ssid[] = "<YOUR-NETWORK-SSID>";  //  your network SSID (name)
+char pass[] = "<YOUR-NETWORK-PASSWORD";       // your network password
 
 const String fName = "props.txt"; // properties file
 
@@ -137,14 +135,10 @@ MQ135 mq135_sensor = MQ135(PIN_MQ135);
 Adafruit_BMP085 bmp;
 
 
-
 // ThingSpeak Settings
-unsigned long myChannelNumber = 206145;
-const char * myWriteAPIKey = "9HJAG2G3F4R4C7KP";
 
-
-//unsigned long myChannelNumber = 123456;
-//const char * myWriteAPIKey = "<YOUR_THING-SPEAK_WRITE_API-KEY>";
+unsigned long myChannelNumber = 123456;
+const char * myWriteAPIKey = "<YOUR_THING-SPEAK_WRITE_API-KEY>";
 
 // Settaggi Barometro BMP180 
 //float seaLevelPressure = 101325;
