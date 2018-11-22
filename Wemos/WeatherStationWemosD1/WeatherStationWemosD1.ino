@@ -53,17 +53,22 @@ Arduino = 29 -> WeMos= NC
 #include "SSD1306.h"
 #include <Arduino.h>
 #include <SoftwareSerial.h>
+#define SCAN_COUNT_SLEEP 5
+uint8_t scan_count = 0;
+
+// Define the pins being used
+int pin_switch = D3;
 
 
 // Initialize PM10/PM2.5 Sensor SEN0177
-#define LENG 31   //0x42 + 31 bytes equal to 32 bytes
-unsigned char buf[LENG];
+//#define LENG 31   //0x42 + 31 bytes equal to 32 bytes
+//unsigned char buf[LENG];
 
-int PM01Value=0;          //define PM1.0 value of the air detector module
-int PM2_5Value=0;         //define PM2.5 value of the air detector module
-int PM10Value=0;         //define PM10 value of the air detector module
+//int PM01Value=0;          //define PM1.0 value of the air detector module
+//int PM2_5Value=0;         //define PM2.5 value of the air detector module
+//int PM10Value=0;         //define PM10 value of the air detector module
 
-SoftwareSerial PMSerial(D6, D7); // RX, TX
+//SoftwareSerial PMSerial(D6, D7); // RX, TX
 
 
 
@@ -85,8 +90,8 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SD
 
 // Wifi Settings
 
-char ssid[] = "<YOUR-NETWORK-SSID>";  //  your network SSID (name)
-char pass[] = "<YOUR-NETWORK-PASSWORD";       // your network password
+char ssid[] = "VodafoneSurfer";  //  your network SSID (name)
+char pass[] = "B311a@P3r.Te";       // your network password
 
 const String fName = "props.txt"; // properties file
 
@@ -137,8 +142,8 @@ Adafruit_BMP085 bmp;
 
 // ThingSpeak Settings
 
-unsigned long myChannelNumber = 123456;
-const char * myWriteAPIKey = "<YOUR_THING-SPEAK_WRITE_API-KEY>";
+unsigned long myChannelNumber = 206145;
+const char * myWriteAPIKey = "9HJAG2G3F4R4C7KP";
 
 // Settaggi Barometro BMP180 
 //float seaLevelPressure = 101325;
@@ -772,21 +777,26 @@ static unsigned char ACROBOT[] PROGMEM ={
 #define PM10 12
 
 void setup() {
-  PMSerial.begin(9600);   
-  PMSerial.setTimeout(1500);
+//  PMSerial.begin(9600);   
+//  PMSerial.setTimeout(1500);
   Serial.begin(9600);
   Serial.println();
   Serial.println();
+  Serial.print("Sketch:   ");   Serial.println(__FILE__);
+  Serial.print("Uploaded: ");   Serial.println(__DATE__);
+  Serial.println(" ");
   Serial.println("WEATHER STATION - Temperature, Pressure, Humidity, Air Quality using Sensors DHT22, MQ135 and BMP180 - Powered By MR WATT");
   Serial.println("BootStrap...");
   //pinMode(D6,INPUT);
   //pinMode(D7,OUTPUT);
   
-
+  //Settings for Pin Switch
+  pinMode(pin_switch, INPUT);
+  
   //display.init();
- // display.flipScreenVertically();
- // display.setFont(ArialMT_Plain_16);
- // display.setTextAlignment(TEXT_ALIGN_LEFT);
+  // display.flipScreenVertically();
+  // display.setFont(ArialMT_Plain_16);
+  // display.setTextAlignment(TEXT_ALIGN_LEFT);
 
   // We start by connecting to a WiFi network
   Serial.print("Connecting to ");
@@ -902,6 +912,23 @@ oledDew = dewpt;
 currentMillis = millis();
 
   String AmPm = "";
+
+
+    if ( digitalRead(pin_switch) == HIGH) 
+    {
+       u8g2.sleepOff();
+//u8g2.backLightOn();
+
+    }
+    else
+    {
+       u8g2.sleepOn();
+//     u8g2.backLightOff();
+    }   
+
+
+
+  
 
   // How much time has passed, accounting for rollover with subtraction!
   if ((unsigned long)(currentMillis - lastMillis) >= interval )
@@ -1034,6 +1061,7 @@ currentMillis = millis();
 // Serial.print(getLevel());
 // Serial.print("% ");
 
+/*
   if(PMSerial.find(0x42)){    
     PMSerial.readBytes(buf,LENG);
 
@@ -1064,7 +1092,7 @@ currentMillis = millis();
       Serial.println("  ug/m3");   
       Serial.println();
     }
-
+*/
  // Write to ThingSpeak
    ThingSpeak.setField(1,temperature);
    ThingSpeak.setField(2,humidity);
@@ -1072,8 +1100,8 @@ currentMillis = millis();
    ThingSpeak.setField(4,ppm);
    ThingSpeak.setField(5,getVoltage());
    ThingSpeak.setField(6,dewpt);
-   ThingSpeak.setField(7,PM2_5Value);
-   ThingSpeak.setField(8,PM10Value);
+//   ThingSpeak.setField(7,PM2_5Value);
+//   ThingSpeak.setField(8,PM10Value);
    ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);  
    
 
@@ -1098,7 +1126,12 @@ draw("Dew Point (Celsius) ...", DEWPT, int(dewpt));
 //u8g2.sendBuffer();          // transfer internal memory to the display
 delay(10000);
 client.stop();
+
+if (++scan_count >= SCAN_COUNT_SLEEP) {
+  ESP.deepSleep(0);
 }
+}
+
 
 // This is section the function that the interrupt calls to increment the rotation count
 //-------------------------------------------------------------------------------------------------------------
@@ -1214,7 +1247,6 @@ void drawURL(void)
   }
 #endif
 }
-
 // Dew Point function
   double dewPoint(double temperature, double humidity) //Calculate dew Point
 {
@@ -1413,6 +1445,7 @@ char checkValue(unsigned char *thebuf, char leng)
   return receiveflag;
 }
 
+/*
 int transmitPM01(unsigned char *thebuf)
 {
   int PM01Val;
@@ -1435,3 +1468,4 @@ int transmitPM10(unsigned char *thebuf)
   PM10Val=((thebuf[7]<<8) + thebuf[8]); //count PM10 value of the air detector module  
   return PM10Val;
 }
+*/
