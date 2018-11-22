@@ -43,8 +43,8 @@ Arduino = 29 -> WeMos= NC
 #include <ctype.h> // for isNumber check
 
 // Wifi Settings
-char ssid[] = "VodafoneSurfer";  //  your network SSID (name)
-char pass[] = "B311a@P3r.Te";       // your network password
+char ssid[] = "<YourNetWorkSSID>";  //  your network SSID (name)
+char pass[] = "<YourNetworkPassword>";       // your network password
 
 float dewpt=0;          // dew point tempf
 
@@ -73,8 +73,8 @@ DHT dht(DHTPIN, DHTTYPE);
 
 // ThingSpeak Settings
 
-unsigned long myChannelNumber = 634036;
-const char * myWriteAPIKey = "40G12BFQSZ6TV3XO";
+unsigned long myChannelNumber = <YourThingSpeakChannelNumber>;
+const char * myWriteAPIKey = "<YourThingSpeakWriteAPIKey>";
 
 
 void setup() {
