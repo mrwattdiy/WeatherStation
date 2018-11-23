@@ -53,11 +53,14 @@ Arduino = 29 -> WeMos= NC
 #include "SSD1306.h"
 #include <Arduino.h>
 #include <SoftwareSerial.h>
-#define SCAN_COUNT_SLEEP 5
-uint8_t scan_count = 0;
 
 // Define the pins being used
 int pin_switch = D3;
+
+#define FREQUENCY 80
+extern "C" {
+#include "user_interface.h"
+}
 
 
 // Initialize PM10/PM2.5 Sensor SEN0177
@@ -90,8 +93,8 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SD
 
 // Wifi Settings
 
-char ssid[] = "VodafoneSurfer";  //  your network SSID (name)
-char pass[] = "B311a@P3r.Te";       // your network password
+char ssid[] = "<YourNetworkSSID>";  //  your network SSID (name)
+char pass[] = "<YourNetworkPassword>";       // your network password
 
 const String fName = "props.txt"; // properties file
 
@@ -142,8 +145,8 @@ Adafruit_BMP085 bmp;
 
 // ThingSpeak Settings
 
-unsigned long myChannelNumber = 206145;
-const char * myWriteAPIKey = "9HJAG2G3F4R4C7KP";
+unsigned long myChannelNumber = 123456; //Your ThingSpeak Channel Number 
+const char * myWriteAPIKey = "<YourThingSpeakWriteAPIKey>";
 
 // Settaggi Barometro BMP180 
 //float seaLevelPressure = 101325;
@@ -914,6 +917,7 @@ currentMillis = millis();
   String AmPm = "";
 
 
+/*
     if ( digitalRead(pin_switch) == HIGH) 
     {
        u8g2.sleepOff();
@@ -925,8 +929,22 @@ currentMillis = millis();
        u8g2.sleepOn();
 //     u8g2.backLightOff();
     }   
+*/
 
+  u8g2.sleepOff();
+  WiFi.mode(WIFI_STA);  
+  wifi_station_connect();
+  WiFi.begin(ssid, pass);
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
 
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
 
   
 
@@ -1124,12 +1142,11 @@ draw("Dew Point (Celsius) ...", DEWPT, int(dewpt));
  
 //  delay(1000); // delay one second before OLED display update
 //u8g2.sendBuffer();          // transfer internal memory to the display
-delay(10000);
-client.stop();
 
-if (++scan_count >= SCAN_COUNT_SLEEP) {
-  ESP.deepSleep(0);
-}
+client.stop();
+u8g2.sleepOn();
+WiFi.forceSleepWake();
+delay(300000);
 }
 
 
