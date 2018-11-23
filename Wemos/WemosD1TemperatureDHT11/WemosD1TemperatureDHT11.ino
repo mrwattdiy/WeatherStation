@@ -32,8 +32,6 @@ Arduino = 28 -> WeMos= NC
 Arduino = 29 -> WeMos= NC
  */
 
-
-
 #include <ESP8266WiFi.h>
 #include <stdio.h>
 #include <ThingSpeak.h>
