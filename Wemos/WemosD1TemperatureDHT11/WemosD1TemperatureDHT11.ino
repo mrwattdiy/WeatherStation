@@ -42,6 +42,11 @@ Arduino = 29 -> WeMos= NC
 #include <Arduino.h>
 #include <ctype.h> // for isNumber check
 
+#define FREQUENCY 80
+extern "C" {
+#include "user_interface.h"
+}
+
 // Wifi Settings
 char ssid[] = "<YourNetWorkSSID>";  //  your network SSID (name)
 char pass[] = "<YourNetworkPassword>";       // your network password
@@ -76,7 +81,6 @@ DHT dht(DHTPIN, DHTTYPE);
 unsigned long myChannelNumber = <YourThingSpeakChannelNumber>;
 const char * myWriteAPIKey = "<YourThingSpeakWriteAPIKey>";
 
-
 void setup() {
   Serial.begin(9600);
   Serial.println();
@@ -86,10 +90,10 @@ void setup() {
   Serial.println("WEATHER STATION - Temperature using Sensor DHT22 - Powered By MR WATT");
   Serial.println("BootStrap...");
 
-  
   // We start by connecting to a WiFi network
   Serial.print("Connecting to ");
   Serial.println(ssid);
+
   WiFi.begin(ssid, pass);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -103,8 +107,17 @@ void setup() {
   Serial.println(WiFi.localIP());
 
    pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
- 
- 
+   digitalWrite(LED_BUILTIN, LOW); // Turn LED on.
+
+/* Initializations 
+// ------------------begin ESP8266'centric----------------------------------
+WiFi.forceSleepBegin();                  // turn off ESP8266 RF
+WiFi.DeepSleep(
+delay(1);                                // give RF section time to shutdown
+system_update_cpu_freq(FREQUENCY);
+// ------------------end ESP8266'centric------------------------------------
+*/
+
   // DHT22 Test
   Serial.println("Initialize DHT22...");
   dht.begin();
@@ -117,8 +130,23 @@ void setup() {
 
 void loop() {
  // Wait a few seconds between measurements. 
- delay(5000);
- 
+ delay(4000);
+  Serial.print("\n Disable power saving, start connection!!");
+  Serial.print("\n");
+  WiFi.mode(WIFI_STA);  
+  wifi_station_connect();
+  WiFi.begin(ssid, pass);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
  float temperature = dht.readTemperature();
  float humidity = dht.readHumidity();
  float dewpt = 0;
@@ -142,15 +170,20 @@ void loop() {
  Serial.print("%");
  Serial.print("\t Dew Point: ");
  Serial.print(dewpt);
-
+ Serial.print("\n");
+ Serial.print("Sending data to ThingSpeak Account...");
  // Write to ThingSpeak
    ThingSpeak.setField(1,temperature);
    ThingSpeak.setField(2,humidity);
    ThingSpeak.setField(3,dewpt);
    ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);  
-   
-delay(15000);
+   digitalWrite(LED_BUILTIN, HIGH); // Turn LED on.
+   delay(1500);
+   digitalWrite(LED_BUILTIN, LOW); // Turn LED off.
+   Serial.print("\n Power saving and wait 5 minutes");
 client.stop();
+WiFi.forceSleepWake();
+delay(300000);
 
 }
 
