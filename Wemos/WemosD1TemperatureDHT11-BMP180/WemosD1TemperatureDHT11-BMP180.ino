@@ -47,11 +47,8 @@ extern "C" {
 }
 
 // Wifi Settings
-//char ssid[] = "<YourNetWorkSSID>";  //  your network SSID (name)
-//char pass[] = "<YourNetworkPassword>";       // your network password
-
-char ssid[] = "VodafoneSurfer";  //  your network SSID (name)
-char pass[] = "B311a@P3r.Te";       // your network password
+char ssid[] = "<YourNetWorkSSID>";  //  your network SSID (name)
+char pass[] = "<YourNetworkPassword>";       // your network password
 
 float dewpt=0;          // dew point tempf
 
@@ -90,11 +87,9 @@ float seaLevelPressure = 101470;
 
 // ThingSpeak Settings
 
-//unsigned long myChannelNumber = 123456;
-//const char * myWriteAPIKey = "XXXXXXXXXXXXXXX";
+unsigned long myChannelNumber = 123456;
+const char * myWriteAPIKey = "XXXXXXXXXXXXXXX";
 
-unsigned long myChannelNumber = 634036;
-const char * myWriteAPIKey = "40G12BFQSZ6TV3XO";
 
 
 void setup() {
