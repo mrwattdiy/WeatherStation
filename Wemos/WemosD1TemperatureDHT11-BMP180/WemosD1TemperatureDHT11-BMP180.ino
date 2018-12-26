@@ -39,26 +39,28 @@ Arduino = 29 -> WeMos= NC
 #include <DHT.h>
 #include <Adafruit_BMP085.h>
 #include <Arduino.h>
-#include <ctype.h> // for isNumber check
+//#include <ctype.h> // for isNumber check
 
+/*
 #define FREQUENCY 80
 extern "C" {
 #include "user_interface.h"
 }
+*/
 
 // Wifi Settings
-char ssid[] = "<YourNetWorkSSID>";  //  your network SSID (name)
-char pass[] = "<YourNetworkPassword>";       // your network password
+char ssid[] = "VodafoneSurfer";  //  your network SSID (name)
+char pass[] = "B311a@P3r.Te";       // your network password
 
 float dewpt=0;          // dew point tempf
 
 WiFiClient  client;
 
 //Initialize DHT22 Sensor
-#define DHTPIN 14     // what digital pin we're connected to
+#define DHTPIN 0     // what digital pin we're connected to
 // Uncomment whatever type you're using!
-#define DHTTYPE DHT11   // DHT 11
-//#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
+//#define DHTTYPE DHT11   // DHT 11
+#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 
 // Connect pin 1 (on the left) of the sensor to +5V
@@ -81,14 +83,14 @@ Adafruit_BMP085 bmp;
 
 // Barometer BMP180 Settings 
 //float seaLevelPressure = 101325;
-float seaLevelPressure = 101470;
+float seaLevelPressure = 102833;
 // Use this site to Calculate the sea-level pressure from the atmospheric pressure, temperature and altitude at the present location :https://keisan.casio.com/exec/system/1224575267
 
 
 // ThingSpeak Settings
 
-unsigned long myChannelNumber = 123456;
-const char * myWriteAPIKey = "XXXXXXXXXXXXXXX";
+unsigned long myChannelNumber = 634036;
+const char * myWriteAPIKey = "40G12BFQSZ6TV3XO";
 
 
 
@@ -171,7 +173,7 @@ void loop() {
  float temperature = dht.readTemperature();
  float humidity = dht.readHumidity();
  float dewpt = 0;
-
+ float wetBulbT = 0;
  // Check if any reads failed and exit early (to try again).
   if (isnan(humidity) || isnan(temperature)) {
     Serial.println("Failed to read from DHT sensor!");
@@ -188,6 +190,7 @@ void loop() {
 
  dewpt = (dewPoint(temperature, humidity));
 
+ wetBulbT = (wetBulb(temperature, humidity, currentPressurehPA));
 
  Serial.print("\t Temperature DHT22: ");
  Serial.print(temperature);
@@ -197,6 +200,8 @@ void loop() {
  Serial.print("%");
  Serial.print("\t Dew Point: ");
  Serial.print(dewpt);
+ Serial.print("\t Wet Bulb Temperature: ");
+ Serial.print(wetBulbT);
  Serial.print("\t Altitude: ");
  Serial.print(currentAltitude);
  Serial.print("m ");
@@ -211,21 +216,21 @@ void loop() {
  Serial.print("m ");
  Serial.print("\n");
  Serial.print("Sending data to ThingSpeak Account...");
- // Write to ThingSpeak
+// Write to ThingSpeak
    ThingSpeak.setField(1,temperature);
    ThingSpeak.setField(2,humidity);
    ThingSpeak.setField(3,dewpt);
    ThingSpeak.setField(4,currentPressurehPA);
    ThingSpeak.setField(5,BMP180Temperature);
-   
-   ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);  
+   ThingSpeak.setField(6,wetBulbT);
+ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);  
    digitalWrite(LED_BUILTIN, HIGH); // Turn LED on.
-   delay(1500);
+   delay(30000);
    digitalWrite(LED_BUILTIN, LOW); // Turn LED off.
-   Serial.print("\n Power saving and wait 5 minutes");
+//   Serial.print("\n Power saving and wait 5 minutes");
 client.stop();
-WiFi.forceSleepWake();
-delay(300000);
+//WiFi.forceSleepWake();
+//delay(300000);
 
 }
 
@@ -271,3 +276,25 @@ void printWifiStatus() {
   double T = log(VP/0.61078);   
   return (241.88 * T) / (17.558-T);
 }
+
+
+// Wet Bulb function
+   double wetBulb(double temperature, double humidity, float pressure) // Calculate wet-Bulb
+ {
+
+#define A 0.539126
+#define B 0.1047837
+#define C -0.0007493556
+#define D -0.001077432
+#define E 0.006414631
+#define F -5.151526
+
+float TWET = A*temperature; 
+TWET += B*humidity; 
+TWET += C*(pow(temperature,2)); 
+TWET += D*(pow(humidity,2)); 
+TWET += E*(temperature*humidity); 
+TWET += F;
+
+return TWET;
+ }
