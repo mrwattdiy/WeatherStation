@@ -39,25 +39,23 @@ Arduino = 29 -> WeMos= NC
 #include <DHT.h>
 #include <Adafruit_BMP085.h>
 #include <Arduino.h>
-//#include <ctype.h> // for isNumber check
+#include <ctype.h> // for isNumber check
+//#include <C:\Users\Simone\Dropbox\Documenti\MRWatt-SRL\Docs\Progetti\Wemos\WemosD1TemperatureDHT11-BMP180\credentials.h>
 
-/*
 #define FREQUENCY 80
 extern "C" {
 #include "user_interface.h"
 }
-*/
+
 
 // Wifi Settings
-char ssid[] = "VodafoneSurfer";  //  your network SSID (name)
-char pass[] = "B311a@P3r.Te";       // your network password
-
-float dewpt=0;          // dew point tempf
+char ssid[] = "<YourSSID";  //  your network SSID (name)
+char pass[] = "YourSSIDPassowrd";       // your network password
 
 WiFiClient  client;
 
 //Initialize DHT22 Sensor
-#define DHTPIN 0     // what digital pin we're connected to
+#define DHTPIN 2     // what digital pin we're connected to
 // Uncomment whatever type you're using!
 //#define DHTTYPE DHT11   // DHT 11
 #define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
@@ -89,8 +87,8 @@ float seaLevelPressure = 102833;
 
 // ThingSpeak Settings
 
-unsigned long myChannelNumber = 634036;
-const char * myWriteAPIKey = "40G12BFQSZ6TV3XO";
+unsigned long myChannelNumber = 123456;
+const char * myWriteAPIKey = "40A12BBFSZ6TV3XO";
 
 
 
@@ -225,12 +223,12 @@ void loop() {
    ThingSpeak.setField(6,wetBulbT);
 ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);  
    digitalWrite(LED_BUILTIN, HIGH); // Turn LED on.
-   delay(30000);
+   delay(15000);
    digitalWrite(LED_BUILTIN, LOW); // Turn LED off.
-//   Serial.print("\n Power saving and wait 5 minutes");
+   Serial.print("\n Power saving and wait 5 minutes");
 client.stop();
-//WiFi.forceSleepWake();
-//delay(300000);
+WiFi.forceSleepWake();
+delay(300000);
 
 }
 
