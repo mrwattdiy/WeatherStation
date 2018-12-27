@@ -40,7 +40,7 @@ Arduino = 29 -> WeMos= NC
 #include <Adafruit_BMP085.h>
 #include <Arduino.h>
 #include <ctype.h> // for isNumber check
-//#include <C:\Users\Simone\Dropbox\Documenti\MRWatt-SRL\Docs\Progetti\Wemos\WemosD1TemperatureDHT11-BMP180\credentials.h>
+//#include <credentials.h>
 
 #define FREQUENCY 80
 extern "C" {
