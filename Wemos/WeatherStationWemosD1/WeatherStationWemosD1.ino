@@ -1,4 +1,5 @@
 /*
+ MR WATT - CECCHETTI SIMONE v.1.0 202006071727
  Below are the mapped pins:
 Arduino = 0 -> WeMos = D3
 Arduino = 1 -> WeMos= NC
@@ -50,17 +51,23 @@ Arduino = 29 -> WeMos= NC
 #include <ctype.h> // for isNumber check
 #include "Time.h"
 #include "TimeLib.h"
-#include "SSD1306.h"
+//#include <ssd1306.h>
+#include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <SoftwareSerial.h>
+#include <WiFiClientSecure.h>
 
 // Define the pins being used
+
 int pin_switch = D3;
 
 #define FREQUENCY 80
 extern "C" {
 #include "user_interface.h"
 }
+
+
+
 
 
 // Initialize PM10/PM2.5 Sensor SEN0177
@@ -93,8 +100,10 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SD
 
 // Wifi Settings
 
-char ssid[] = "<YourNetworkSSID>";  //  your network SSID (name)
-char pass[] = "<YourNetworkPassword>";       // your network password
+//char ssid[] = "<YourNetworkSSID>";  //  your network SSID (name)
+//char pass[] = "<YourNetworkPassword>";       // your network password
+char ssid[] = "VodafoneSurfer";  //  your network SSID (name)
+char pass[] = "B311a@P3r.Te";       // your network password
 
 const String fName = "props.txt"; // properties file
 
@@ -103,7 +112,7 @@ unsigned long lastMillis = 0;
 unsigned long currentMillis = 0;
 unsigned long secsSince1900 = 0;
 bool daylightSavings = false;
-bool hourTime = false;
+bool hourTime = true;
 int interval = 30000; //
 String timeStr = "";
 String webMessage = "";
@@ -112,9 +121,9 @@ float dewpt=0;          // dew point tempf
 
 
 WiFiClient  client;
-
+WiFiClientSecure clientsecure;
 //Initialize DHT22 Sensor
-#define DHTPIN 14     // what digital pin we're connected to
+#define DHTPIN 12     // what digital pin we're connected to
 
 // Uncomment whatever type you're using!
 //#define DHTTYPE DHT11   // DHT 11
@@ -145,12 +154,15 @@ Adafruit_BMP085 bmp;
 
 // ThingSpeak Settings
 
-unsigned long myChannelNumber = 123456; //Your ThingSpeak Channel Number 
-const char * myWriteAPIKey = "<YourThingSpeakWriteAPIKey>";
+//unsigned long myChannelNumber = 123456; //Your ThingSpeak Channel Number 
+//const char * myWriteAPIKey = "<YourThingSpeakWriteAPIKey>";
+unsigned long myChannelNumber = 634036;
+const char * myWriteAPIKey = "AHS7IHOVO77164EE";
+const char * myReadAPIKey = "VGU0BO3N154VDGF2";
 
 // Settaggi Barometro BMP180 
 //float seaLevelPressure = 101325;
-float seaLevelPressure = 102004;
+float seaLevelPressure = 100457;
 // Valore calcolato in base all'altitudine : http://www.calctool.org/CALC/phys/default/pres_at_alt ho utilizzato il valore medio
 
 
@@ -158,9 +170,9 @@ unsigned int localPort = 2390;      // local port to listen for UDP packets
 
 /* Don't hardwire the IP address or we won't get the benefits of the pool.
     Lookup the IP address for the host name instead */
-//IPAddress timeServer(129, 6, 15, 28); // time.nist.gov NTP server
 IPAddress timeServerIP; // time.nist.gov NTP server address
-const char* ntpServerName = "time.nist.gov";
+const char* ntpServerName = "time.inrim.it";
+
 
 const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
 
@@ -170,11 +182,13 @@ byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing pack
 WiFiUDP udp;
 
 // Initialize the OLED display using Wire library
-SSD1306  display(0x3c, SDA, SCL);
+Adafruit_SSD1306  display(0x3c, SDA, SCL);
 
 
 
 ESP8266WebServer server(80);
+
+
 
 ///////////////////////////////////////////////////////////////////////////
 // Time functions
@@ -269,6 +283,8 @@ void setDateTime()
 /////////////////////////////////////////
 //        HTML functions
 ////////////////////////////////////////
+
+
 
 String getDropDown()
 {
@@ -620,7 +636,7 @@ boolean isValidNumber(String str) {
 void handle_submit() {
 
   webMessage = "";
-  daylightSavings = false;
+  daylightSavings = true;
   hourTime = false;
 
   if (server.args() > 0 ) {
@@ -824,6 +840,7 @@ void setup() {
   Serial.print("Local port: ");
   Serial.println(udp.localPort());
 
+
   server.on("/", handle_root);
   server.on("/submit", handle_submit);
   server.on("/time", handle_time); // Used for AJAX call
@@ -870,8 +887,9 @@ if (!bmp.begin()) {
   Serial.println("Initialize DHT22...");
   dht.begin();
 
+  Serial.println("Initialize ThingSpeak Channel...");
  // Initialize ThingSpeak
-  ThingSpeak.begin(client);
+  ThingSpeak.begin(clientsecure);
 
 }
 
@@ -894,25 +912,26 @@ void loop() {
  float currentTemperature = bmp.readTemperature();
  float currentSealevelPressure = bmp.readSealevelPressure();
  int currentPressurehPA = int(bmp.readPressure()/100);
-unsigned int raw=0;
+ //float currentAltitude = getAltitude(bmp.readPressure(), bmp.readTemperature());
+ unsigned int raw=0;
  float volt=0.0;
  // Time to sleep (in seconds):
  const int sleepTimeS = 60;
  String oledTemp;
-String oledHum;
-String oledPressure;
-String oledPPM;
-String oledDew;
+ String oledHum;
+ String oledPressure;
+ String oledPPM;
+ String oledDew;
  float dewpt = 0;
+ float wetBulbT = 0;
 
-oledTemp = currentTemperature;
-oledHum = humidity;
-oledPressure = currentPressurehPA;
-oledPPM = ppm;
-oledDew = dewpt;
+ oledTemp = currentTemperature;
+ oledHum = humidity;
+ oledPressure = currentPressurehPA;
+ oledPPM = ppm;
+ oledDew = dewpt;
 
-
-currentMillis = millis();
+ currentMillis = millis();
 
   String AmPm = "";
 
@@ -946,7 +965,7 @@ currentMillis = millis();
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  
+ 
 
   // How much time has passed, accounting for rollover with subtraction!
   if ((unsigned long)(currentMillis - lastMillis) >= interval )
@@ -1010,8 +1029,9 @@ currentMillis = millis();
   dateStr += month();
   dateStr += "/";
   dateStr += year();
-
-  Serial.println(dateStr);
+  Serial.print("Date: ");
+  Serial.print(dateStr);
+  Serial.print("\n");
 
  // display.clear();
 //  display.drawString(0, 0,  timeStr);
@@ -1020,7 +1040,7 @@ currentMillis = millis();
 
  // display.display();
 
-  server.handleClient();
+ server.handleClient();
 
  delay(1000);
 
@@ -1036,42 +1056,60 @@ currentMillis = millis();
  sensorVoltage = sensorValue/1024*5.0;
 
  dewpt = (dewPoint(temperature, humidity));
+ wetBulbT = (wetBulb(temperature, humidity, currentPressurehPA));
+
  
  Serial.print("\t Temperature DHT22: ");
  Serial.print(temperature);
  Serial.print("C ");
+ Serial.print("\n");
  Serial.print("\t Humidity: "); 
  Serial.print(humidity);
  Serial.print("%");
+ Serial.print("\n");
  Serial.print("\t Sensor Voltage: ");
  Serial.print(sensorVoltage);
  Serial.print("V");
+ Serial.print("\n");
  Serial.print("\t MQ135 RZero: ");
  Serial.print(rzero);
+ Serial.print("\n");
  Serial.print("\t Corrected RZero: ");
  Serial.print(correctedRZero);
+ Serial.print("\n");
  Serial.print("\t Resistance: ");
  Serial.print(resistance);
+ Serial.print("\n");
  Serial.print("\t PPM: ");
  Serial.print(ppm);
+ Serial.print("\n");
  Serial.print("\t Corrected PPM: ");
  Serial.print(correctedPPM);
- Serial.println("ppm");
+ Serial.print("ppm");
+ Serial.print("\n");
  Serial.print("\t Altitude: ");
  Serial.print(currentAltitude);
  Serial.print("m ");
+ Serial.print("\n");
  Serial.print("\t Pressure: ");
  Serial.print(currentPressure);
  Serial.print("Pa ");
+ Serial.print("\n");
  Serial.print("\t Temperature BMP180: ");
  Serial.print(currentTemperature);
  Serial.print("C");
+ Serial.print("\n");
  Serial.print("\t Pressure Sealevel BMP180: ");
  Serial.print(currentSealevelPressure);
  Serial.print("m ");
+ Serial.print("\n");
  Serial.print("\t Dew Point: ");
  Serial.print(dewpt);
- Serial.print(hour());
+ Serial.print("\n");
+ Serial.print("\t Wet Bulb Temperature: ");
+ Serial.print(wetBulbT);
+ Serial.print("C ");
+ Serial.print("\n");
 // Serial.print("\t Battery Spanning: ");
 // Serial.print(getVoltage());
 // Serial.print("V ");
@@ -1111,17 +1149,41 @@ currentMillis = millis();
       Serial.println();
     }
 */
+
+ Serial.print("\n");
+ Serial.print("Sending data to MRWATT ThingSpeak Account...");
+ Serial.print("\n");
+
  // Write to ThingSpeak
    ThingSpeak.setField(1,temperature);
    ThingSpeak.setField(2,humidity);
-   ThingSpeak.setField(3,currentPressurehPA);
-   ThingSpeak.setField(4,ppm);
-   ThingSpeak.setField(5,getVoltage());
-   ThingSpeak.setField(6,dewpt);
+   ThingSpeak.setField(3,dewpt);
+   ThingSpeak.setField(4,currentPressurehPA);
+   ThingSpeak.setField(5,ppm);
+   ThingSpeak.setField(6,wetBulbT);
+   ThingSpeak.setField(7,sensorVoltage);
 //   ThingSpeak.setField(7,PM2_5Value);
 //   ThingSpeak.setField(8,PM10Value);
-   ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);  
+
+       int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+       if(x == 200){
+             Serial.println("Channel update successful.");
+       }
+        else{
+         Serial.println("Problem updating channel. HTTP error code " + String(x));
+       } 
+  
+   digitalWrite(LED_BUILTIN, HIGH); // Turn LED on.
+   delay(10000);
+   digitalWrite(LED_BUILTIN, LOW); // Turn LED off.
    
+ //  Serial.print("\n Power saving and wait 5 minutes");
+ //  client.stop();
+   Serial.print("-------------------------------------------------------------------------------------------------"); 
+   Serial.print("\n");
+   // WiFi.forceSleepWake();
+
+
 
 // draw("Temperature (Celsius) ...", TEMPERATURE, int(currentTemperature));
  if ( hour() > 6 && hour() < 19 ) {draw("Temperature (Celsius) ...", TEMPERATUREDAY, int(currentTemperature));}
@@ -1136,17 +1198,22 @@ draw("Pressure (hPa) ...", PRESSURE, int(currentPressurehPA));
  if ( correctedPPM > 1500 && correctedPPM < 2000 ) {draw("Air Quality (PPM)... >>>!!BAD!!<<<", AIRQ, int(ppm));}
  if ( correctedPPM > 2000 && correctedPPM < 50000 ) {draw("Air Quality (PPM)... >>>!!!TOXIC!!!<<<", AIRQ, int(ppm));}
  if ( correctedPPM > 50000 || correctedPPM == 0 ) {draw("Air Quality (PPM)... >>>!PREHEAT MQ135!<<<", AIRQ, int(ppm));}
-// draw("Air Quality (PPM) ...", AIRQ, int(ppm));
+draw("Air Quality (PPM) ...", AIRQ, int(ppm));
 draw("Dew Point (Celsius) ...", DEWPT, int(dewpt));
 
  
-//  delay(1000); // delay one second before OLED display update
+ // delay(1000); // delay one second before OLED display update
 //u8g2.sendBuffer();          // transfer internal memory to the display
 
-client.stop();
-u8g2.sleepOn();
-WiFi.forceSleepWake();
-delay(300000);
+//client.stop();
+//u8g2.sleepOn();
+//WiFi.forceSleepWake();
+//delay(300000);
+//delay(5000);
+
+
+
+   delay(20000);
 }
 
 
@@ -1177,14 +1244,16 @@ void printWifiStatus() {
   Serial.println(" dBm");
 }
 
-float getVoltage(){
+
+  float getVoltage(){
   float raw = analogRead(A0);                      
   float volt = map(raw, 140, 227, 338, 511);             // Avec une résistance 1M5 - With a 1M5 resistor
   volt = volt / 100;
  // Serial.print("\tA0 "); Serial.println(raw);
-  Serial.print("\tVoltage "); Serial.println(volt);
+  Serial.print("\tVoltage "); Serial.print(volt);
   return volt;
 }
+
 
 /*
 float getLevel(){
@@ -1462,6 +1531,26 @@ char checkValue(unsigned char *thebuf, char leng)
   return receiveflag;
 }
 
+// Wet Bulb function
+   double wetBulb(double temperature, double humidity, float pressure) // Calculate wet-Bulb
+ {
+
+#define A 0.539126
+#define B 0.1047837
+#define C -0.0007493556
+#define D -0.001077432
+#define E 0.006414631
+#define F -5.151526
+
+float TWET = A*temperature; 
+TWET += B*humidity; 
+TWET += C*(pow(temperature,2)); 
+TWET += D*(pow(humidity,2)); 
+TWET += E*(temperature*humidity); 
+TWET += F;
+
+return TWET;
+ }
 /*
 int transmitPM01(unsigned char *thebuf)
 {
@@ -1486,3 +1575,9 @@ int transmitPM10(unsigned char *thebuf)
   return PM10Val;
 }
 */
+
+// Funzione per calcolare l'altitudine in base alla pressione data dal BMP180
+float getAltitude(float press, float temp) {
+ const float sea_press = 1013.25;
+ return ((pow((sea_press / press), 1/5.257) - 1.0) * (temp + 273.15)) / 0.0065;
+}
