@@ -102,8 +102,6 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SD
 
 //char ssid[] = "<YourNetworkSSID>";  //  your network SSID (name)
 //char pass[] = "<YourNetworkPassword>";       // your network password
-char ssid[] = "VodafoneSurfer";  //  your network SSID (name)
-char pass[] = "B311a@P3r.Te";       // your network password
 
 const String fName = "props.txt"; // properties file
 
@@ -156,9 +154,7 @@ Adafruit_BMP085 bmp;
 
 //unsigned long myChannelNumber = 123456; //Your ThingSpeak Channel Number 
 //const char * myWriteAPIKey = "<YourThingSpeakWriteAPIKey>";
-unsigned long myChannelNumber = 634036;
-const char * myWriteAPIKey = "AHS7IHOVO77164EE";
-const char * myReadAPIKey = "VGU0BO3N154VDGF2";
+const char * myReadAPIKey = "<YourThingSpeakReadAPIKey>";
 
 // Settaggi Barometro BMP180 
 //float seaLevelPressure = 101325;
