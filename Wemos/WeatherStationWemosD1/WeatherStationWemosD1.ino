@@ -685,7 +685,7 @@ delay(1000); // delay one second before OLED display update
 u8g2.sendBuffer();          // transfer internal memory to the display
 }
    client.stop();
-   delay(20000);
+   delay(300000);
 }
 
 
