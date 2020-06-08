@@ -36,6 +36,7 @@ Arduino = 29 -> WeMos= NC
 
 
 #include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
 #include <WiFiUdp.h>
 #include <MQ135.h>
 #include <stdio.h>
@@ -43,10 +44,8 @@ Arduino = 29 -> WeMos= NC
 #include <Wire.h>
 #include <Adafruit_BMP085.h>
 #include <DHT.h>
-//#include <ACROBOTIC_SSD1306.h>
 #include <Arduino.h>
 #include <U8g2lib.h>
-#include <ESP8266WebServer.h>
 #include <FS.h> // FOR SPIFFS
 #include <ctype.h> // for isNumber check
 #include "Time.h"
@@ -122,7 +121,7 @@ float dewpt=0;          // dew point tempf
 WiFiClient  client;
 WiFiClientSecure clientsecure;
 //Initialize DHT22 Sensor
-#define DHTPIN 12     // what digital pin we're connected to
+#define DHTPIN 2     // what digital pin we're connected to
 
 // Uncomment whatever type you're using!
 //#define DHTTYPE DHT11   // DHT 11
@@ -371,7 +370,7 @@ void loop() {
  // Wait a few seconds between measurements. 
  delay(5000);
 
- const int deepSleepSecs = 1800;
+ const int deepSleepSecs = 300;
  unsigned long int actSleepTime = deepSleepSecs * 1000000;
  float rzero = mq135_sensor.getRZero();
  float temperature = dht.readTemperature();
@@ -425,6 +424,8 @@ void loop() {
     }   
 */
 
+
+
   u8g2.sleepOff();
   WiFi.mode(WIFI_STA);  
   wifi_station_connect();
@@ -440,9 +441,7 @@ void loop() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
- 
-
-  // How much time has passed, accounting for rollover with subtraction!
+   // How much time has passed, accounting for rollover with subtraction!
   if ((unsigned long)(currentMillis - lastMillis) >= interval )
   {
     setDateTime();
@@ -648,15 +647,16 @@ void loop() {
          Serial.println("Problem updating channel. HTTP error code " + String(x));
        } 
   
-   digitalWrite(LED_BUILTIN, HIGH); // Turn LED on.
-   delay(10000);
-   digitalWrite(LED_BUILTIN, LOW); // Turn LED off.
+  // digitalWrite(LED_BUILTIN, HIGH); // Turn LED on.
+  // delay(10000);
+  // digitalWrite(LED_BUILTIN, LOW); // Turn LED off.
    Serial.print("-------------------------------------------------------------------------------------------------"); 
    Serial.print("\n");
   
 // draw("Temperature (Celsius) ...", TEMPERATURE, int(currentTemperature));
-// if ( hour() > 6 && hour() < 19 ) {draw("Temperature (Celsius) ...", TEMPERATUREDAY, int(currentTemperature));}
-
+if ( hour() > 19 && hour() < 6 ) {draw("Temperature (Celsius) ...", TEMPERATURENIGHT, int(currentTemperature));}
+if ( hour() > 6 && hour() < 19 ) {draw("Temperature (Celsius) ...", TEMPERATUREDAY, int(currentTemperature));}
+/*
  if ( hour() > 19 && hour() < 6 ) 
  {
    draw("Temperature (Celsius) ...", TEMPERATURENIGHT, int(currentTemperature));
@@ -667,7 +667,9 @@ void loop() {
  }  
 else if ( hour() > 6 && hour() < 19 ) 
 {
-draw("Temperature (Celsius) ...", TEMPERATUREDAY, int(currentTemperature));
+*/
+
+
 draw("Humidity (%) ...", HUMIDITY, int(humidity));
 draw("Pressure (hPa) ...", PRESSURE, int(currentPressurehPA));
  if ( correctedPPM > 1 && correctedPPM < 700 ) {draw("Air Quality (PPM)... >>>EXCELLENT<<<", AIRQ, int(ppm));}
@@ -681,11 +683,16 @@ draw("Air Quality (PPM) ...", AIRQ, int(ppm));
 draw("Dew Point (Celsius) ...", DEWPT, int(dewpt));
 
  
-delay(1000); // delay one second before OLED display update
+//delay(1000); // delay one second before OLED display update
 u8g2.sendBuffer();          // transfer internal memory to the display
-}
+//}
+
+  Serial.print("\n Power saving mode and wait 5 minutes");
+   u8g2.sleepOn();
+   ESP.deepSleep(actSleepTime);
    client.stop();
-   delay(300000);
+   
+   delay(30000);
 }
 
 
