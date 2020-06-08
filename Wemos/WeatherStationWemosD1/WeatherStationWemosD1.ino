@@ -52,6 +52,7 @@ Arduino = 29 -> WeMos= NC
 #include "Time.h"
 #include "TimeLib.h"
 //#include <ssd1306.h>
+#include "secrets.h"
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <SoftwareSerial.h>
@@ -100,8 +101,8 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SD
 
 // Wifi Settings
 
-//char ssid[] = "<YourNetworkSSID>";  //  your network SSID (name)
-//char pass[] = "<YourNetworkPassword>";       // your network password
+char ssid[] = SECRET_SSID;  //  looking for your network SSID (name) in credentials.h file
+char pass[] = SECRET_PASS;       // looking for your network password in credentials.h file 
 
 const String fName = "props.txt"; // properties file
 
@@ -152,9 +153,9 @@ Adafruit_BMP085 bmp;
 
 // ThingSpeak Settings
 
-//unsigned long myChannelNumber = 123456; //Your ThingSpeak Channel Number 
-//const char * myWriteAPIKey = "<YourThingSpeakWriteAPIKey>";
-const char * myReadAPIKey = "<YourThingSpeakReadAPIKey>";
+unsigned long myChannelNumber = SECRET_CH_ID_WEATHER_STATION; //Your ThingSpeak Channel Number 
+const char * myWriteAPIKey = SECRET_WRITE_APIKEY;
+const char * myReadAPIKey = SECRET_READ_APIKEY;
 
 // Settaggi Barometro BMP180 
 //float seaLevelPressure = 101325;
@@ -166,7 +167,7 @@ unsigned int localPort = 2390;      // local port to listen for UDP packets
 
 /* Don't hardwire the IP address or we won't get the benefits of the pool.
     Lookup the IP address for the host name instead */
-IPAddress timeServerIP; // time.nist.gov NTP server address
+IPAddress timeServerIP; // time.inrim.it NTP server address
 const char* ntpServerName = "time.inrim.it";
 
 
@@ -183,530 +184,6 @@ Adafruit_SSD1306  display(0x3c, SDA, SCL);
 
 
 ESP8266WebServer server(80);
-
-
-
-///////////////////////////////////////////////////////////////////////////
-// Time functions
-////////////////////////////////////////////////////////////////////////////
-
-// send an NTP request to the time server at the given address
-unsigned long sendNTPpacket(IPAddress& address)
-{
-  Serial.println("sending NTP packet...");
-  // set all bytes in the buffer to 0
-  memset(packetBuffer, 0, NTP_PACKET_SIZE);
-  // Initialize values needed to form NTP request
-  // (see URL above for details on the packets)
-  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-  packetBuffer[1] = 0;     // Stratum, or type of clock
-  packetBuffer[2] = 6;     // Polling Interval
-  packetBuffer[3] = 0xEC;  // Peer Clock Precision
-  // 8 bytes of zero for Root Delay & Root Dispersion
-  packetBuffer[12]  = 49;
-  packetBuffer[13]  = 0x4E;
-  packetBuffer[14]  = 49;
-  packetBuffer[15]  = 52;
-
-  // all NTP fields have been given values, now
-  // you can send a packet requesting a timestamp:
-  udp.beginPacket(address, 123); //NTP requests are to port 123
-  udp.write(packetBuffer, NTP_PACKET_SIZE);
-  udp.endPacket();
-}
-
-/////////////////////////////////////////////////////////////////////////////////////
-
-
-void setDateTime()
-{
-
-  unsigned long epoch;
-
-  Serial.print("\t .....Updating Time.....");
-
- // display.clear();
- // display.drawString(0, 0,  timeStr);
- // display.drawString(0, 19, dateStr);
- // display.drawString(0, 40, "-Updating Time-");
- // display.display();
-
-  lastMillis = currentMillis;
-
-  //get a random server from the pool
-  WiFi.hostByName(ntpServerName, timeServerIP);
-
-  sendNTPpacket(timeServerIP); // send an NTP packet to a time server
-  // wait to see if a reply is available
-  delay(1000);
-
-  int cb = udp.parsePacket();
-  if (!cb) {
-    Serial.println("\t no packet yet");
-  }
-  else {
-    Serial.print("packet received, length=");
-    Serial.println(cb);
-    // We've received a packet, read the data from it
-    udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
-
-    //the timestamp starts at byte 40 of the received packet and is four bytes,
-    // or two words, long. First, esxtract the two words:
-
-    unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
-    unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
-    // combine the four bytes (two words) into a long integer
-    // this is NTP time (seconds since Jan 1 1900):
-    secsSince1900 = highWord << 16 | lowWord;
-
-  }
-  //Serial.print("secsSince1900: ");
-  //Serial.println(secsSince1900);
-  const unsigned long seventyYears = 2208988800UL;
-  // subtract seventy years:
-  epoch = secsSince1900 - seventyYears;
-
-  epoch = epoch + (int)(UTCoffset * 3600);
-  if (daylightSavings)
-  {
-    epoch = epoch + 3600;
-  }
-
-  setTime(epoch);
-
-}
-
-/////////////////////////////////////////
-//        HTML functions
-////////////////////////////////////////
-
-
-
-String getDropDown()
-{
-  String webString = "";
-  webString += "<select name=\"timezone\">\n";
-  webString += "   <option value=\"-12\" ";
-  if (UTCoffset == -12)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -12:00) Eniwetok, Kwajalein</option>\n";
-
-  webString += "   <option value=\"-11\" ";
-  if (UTCoffset == -11)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -11:00) Midway Island, Samoa</option>\n";
-
-  webString += "   <option value=\"-10\" ";
-  if (UTCoffset == -10)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -10:00) Hawaii</option>\n";
-
-  webString += "   <option value=\"-9\" ";
-  if (UTCoffset == -9)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -9:00) Alaska</option>\n";
-
-  webString += "   <option value=\"-8\" ";
-  if (UTCoffset == -8)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -8:00) Pacific Time (US &amp; Canada)</option>\n";
-
-  webString += "   <option value=\"-7\" ";
-  if (UTCoffset == -7)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -7:00) Mountain Time (US &amp; Canada)</option>\n";
-
-  webString += "   <option value=\"-6\" ";
-  if (UTCoffset == -6)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>\n";
-
-  webString += "   <option value=\"-5\" ";
-  if (UTCoffset == -5)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>\n";
-
-  webString += "   <option value=\"-4.5\" ";
-  if (UTCoffset == -4.5)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -4:30) Caracas</option>\n";
-
-  webString += "   <option value=\"-4\" ";
-  if (UTCoffset == -4)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -4:00) Atlantic Time (Canada), La Paz, Santiago</option>\n";
-
-  webString += "   <option value=\"-3.5\" ";
-  if (UTCoffset == -3.5)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -3:30) Newfoundland</option>\n";
-
-  webString += "   <option value=\"-3\" ";
-  if (UTCoffset == -3)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>\n";
-
-  webString += "   <option value=\"-2\" ";
-  if (UTCoffset == -2)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -2:00) Mid-Atlantic</option>\n";
-
-  webString += "   <option value=\"-1\" ";
-  if (UTCoffset == -1)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT -1:00 hour) Azores, Cape Verde Islands</option>\n";
-
-  webString += "   <option value=\"0\" ";
-  if (UTCoffset == 0)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT) Western Europe Time, London, Lisbon, Casablanca, Greenwich</option>\n";
-
-  webString += "   <option value=\"1\" ";
-  if (UTCoffset == 1)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>\n";
-
-  webString += "   <option value=\"2\" ";
-  if (UTCoffset == 2)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +2:00) Kaliningrad, South Africa, Cairo</option>\n";
-
-  webString += "   <option value=\"3\" ";
-  if (UTCoffset == 3)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>\n";
-
-  webString += "   <option value=\"3.5\" ";
-  if (UTCoffset == 3.5)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +3:30) Tehran</option>\n";
-
-  webString += "   <option value=\"4\" ";
-  if (UTCoffset == 4)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +4:00) Abu Dhabi, Muscat, Yerevan, Baku, Tbilisi</option>\n";
-
-  webString += "   <option value=\"4.5\" ";
-  if (UTCoffset == 4.5)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +4:30) Kabul</option>\n";
-
-  webString += "   <option value=\"5\" ";
-  if (UTCoffset == 5)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>\n";
-
-  webString += "   <option value=\"5.5\" ";
-  if (UTCoffset == 5.5)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +5:30) Mumbai, Kolkata, Chennai, New Delhi</option>\n";
-
-  webString += "   <option value=\"5.75\" ";
-  if (UTCoffset == 5.75)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +5:45) Kathmandu</option>\n";
-
-  webString += "   <option value=\"6\" ";
-  if (UTCoffset == 6)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +6:00) Almaty, Dhaka, Colombo</option>\n";
-
-  webString += "   <option value=\"6.5\" ";
-  if (UTCoffset == 6.5)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +6:30) Yangon, Cocos Islands</option>\n";
-
-  webString += "   <option value=\"7\" ";
-  if (UTCoffset == 7)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>\n";
-
-  webString += "   <option value=\"8\" ";
-  if (UTCoffset == 8)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>\n";
-
-  webString += "   <option value=\"9\" ";
-  if (UTCoffset == 9)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>\n";
-
-  webString += "   <option value=\"9.5\" ";
-  if (UTCoffset == 9.5)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +9:30) Adelaide, Darwin</option>\n";
-
-  webString += "   <option value=\"10\" ";
-  if (UTCoffset == 10)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>\n";
-
-  webString += "   <option value=\"11\" ";
-  if (UTCoffset == 11)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>\n";
-
-  webString += "   <option value=\"12\" ";
-  if (UTCoffset == 12)
-    webString += " selected=\"seleted\" ";
-  webString += ">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>\n";
-  webString += "  </select>\n";
-
-  return webString;
-}
-
-////////////////////////////////////////////////////////////////////
-
-String getAJAXcode()
-{
-
-  String webStr = "";
-  webStr += "<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js\"></script> \n";
-  webStr += "<script>\n";
-
-  webStr += " function loadTime() { \n";
-  webStr += " $(\"#timeDiv\").load(\"http://" + WiFi.localIP().toString() + "/time\"); \n";
-  webStr += "} \n\n";
-
-  webStr += " setInterval(loadTime, 1000); \n"; // every x milli seconds
-  webStr += " loadTime(); \n";// on load
-
-  webStr += " </script> \n";
-  return webStr;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////
-
-String setHTML()
-{
-  String webString = "<html><head>\n";
-  //  webString += "<meta http-equiv=\"refresh\" content=\"30;url=http://" + WiFi.localIP().toString() + "\"> \n";
-  webString += getAJAXcode();
-  webString += "</head><body>\n";
-  webString += "<form action=\"http://" + WiFi.localIP().toString() + "/submit\" method=\"POST\">";
-  webString += "<h1>MR WATT WEATHER STATION Clock IoT </h1>\n";
-  webString += "<div style=\"color:red\">" + webMessage + "</div>\n";
-
-  webString += "<div id=\"timeDiv\" style=\"color:blue; font-size:24px; font-family:'Comic Sans MS'\">" + dateStr + " &nbsp; &nbsp; &nbsp; " + timeStr + "</div>\n";
-
-  webString += "<br><br>" + getDropDown();
-
-  webString += "<br><table style=\"width:400px;\"><tr>";
-  webString += "<td style=\"text-align:right\">";
-  webString += "<div>Time Server Update Interval: </div>\n";
-  webString += "<div>Daylight Savings: </div>\n";
-  webString += "<div>24 hour: </div>\n";
-  webString += "</td>";
-  webString += "<td>";
-  webString += " <input type='text' value='" + String(interval / 1000) + "' name='interval' maxlength='10' size='4'> (secs)<br>\n";
-
-  if (daylightSavings)
-    webString += " <input type='checkbox' checked name='daySave' value='" +  String(daylightSavings) + "'/>";
-  else
-    webString += " <input type='checkbox' name='daySave' value='" +  String(daylightSavings) + "'  />";
-
-
-  if (hourTime)
-    webString += "<br><input type='checkbox' checked name='24hour' value='" +  String(hourTime) + "'/>";
-  else
-    webString += "<br><input type='checkbox' name='24hour' value='" +  String(hourTime) + "'  />";
-
-  webString += " <input type='submit' value='Submit' >\n";
-
-  webString += "</td></tr></table>\n";
-
-  webString += "<div><a href=\"/\">Refresh</a></div> \n";
- // webString += "<table style=\"width:100%\"><tr><tr><th>Firstname</th><th>Lastname</th><th>Age</th></tr><tr><td>Jill</td><td>Smith</td><td>50</td></tr><tr><td>Eve</td><td>Jackson</td><td>94</td></tr></table>\n";
-  webString +="<!DOCTYPE html><html><head><style>table\ {\ font-family:\ arial,\ sans-serif;\ border-collapse:\ collapse;\ width:\ 100%;\ }\ td,\ th\ {\ border:\ 1px\ solid\ #dddddd;\ text-align:\ left;\ padding:\ 8px;\ }\ tr:nth-child(even)\ {\ background-color:\ #dddddd;\ }</style></head><body><h2>HTML Table</h2><table><tr><th>Company</th><th>Contact</th><th>Country</th></tr><tr><td>Alfreds Futterkiste</td><td>Maria Anders</td><td>Germany</td></tr><tr><td>Centro comercial Moctezuma</td><td>Francisco Chang</td><td>Mexico</td></tr><tr><td>Ernst Handel</td><td>Roland Mendel</td><td>Austria</td></tr><tr><td>Island Trading</td><td>Helen Bennett</td><td>UK</td></tr><tr><td>Laughing Bacchus Winecellars</td><td>Yoshi Tannamuri</td><td>Canada</td></tr><tr><td>Magazzini Alimentari Riuniti</td><td>Giovanni Rovelli</td><td>Italy</td></tr></table></body></html>\n";
-  
-  webString += "</form></body></html>\n";
-  
-
-  return webString;
-}
-
-
-
-/////////////////////////////////////////////////////////////
-//   File functions
-/////////////////////////////////////////////////////////////
-
-void updateProperties()
-{
-  File f = SPIFFS.open(fName, "w");
-  if (!f) {
-
-    Serial.println("file open for properties failed");
-  }
-  else
-  {
-    Serial.println("====== Updating to properties file =========");
- //   display.clear();
- //   display.drawString(0, 0, " Updating");
- //   display.drawString(0, 19, "properties");
- //   display.drawString(0, 40, "file...");
- //   display.display();
-
-    f.print(UTCoffset); f.print( ","); f.print(daylightSavings);
-    f.print("~"); f.print(interval);
-    f.print(":"); f.println(hourTime);
-
-    Serial.println("Properties file updated");
-
-    f.close();
-  }
-}
-
-/////////////////////////////////////////
-
-void initPropFile()
-{
-
-  SPIFFS.begin();
-  delay(10);
-  /////////////////////////////////////////////////////////
-  // SPIFFS.format(); // uncomment to completely clear data
-  // return;
-  ///////////////////////////////////////////////////////////
-  File f = SPIFFS.open(fName, "r");
-
-  if (!f) {
-
-    Serial.println("Please wait 30 secs for SPIFFS to be formatted");
-
- //   display.clear();
-  //  display.drawString(0, 0,  "Formatting...");
- //   display.drawString(0, 19, "Please wait 30");
- //   display.drawString(0, 40, "seconds.");
- //   display.display();
-
-    SPIFFS.format();
-
-    Serial.println("Spiffs formatted");
-
-    updateProperties();
-
-  }
-  else
-  {
-    Serial.println("Properties file exists. Reading.");
-
-    while (f.available()) {
-
-      //Lets read line by line from the file
-      String str = f.readStringUntil('\n');
-
-      String offsetStr = str.substring(0, str.indexOf(",")  );
-      String dSavStr = str.substring(str.indexOf(",") + 1, str.indexOf("~") );
-      String intervalStr = str.substring(str.indexOf("~") + 1, str.indexOf(":") );
-      String hourStr = str.substring(str.indexOf(":") + 1 );
-
-      UTCoffset = offsetStr.toFloat();
-      daylightSavings = dSavStr.toInt();
-      interval = intervalStr.toInt();
-      hourTime = hourStr.toInt();
-
-    }
-
-    f.close();
-  }
-
-}
-
-//////////////////////////////////////////////////////////
-// used to error check the text box input
-/////////////////////////////////////////////////////////
-
-boolean isValidNumber(String str) {
-  for (byte i = 0; i < str.length(); i++)
-  {
-    if (isDigit(str.charAt(i))) return true;
-  }
-  return false;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////
-/// client handlers
-//////////////////////////////////////////////////////////////////////////////////////
-
-void handle_submit() {
-
-  webMessage = "";
-  daylightSavings = true;
-  hourTime = false;
-
-  if (server.args() > 0 ) {
-    for ( uint8_t i = 0; i < server.args(); i++ ) {
-
-      // can be useful to determine the values from a form post.
-      //  webMessage += "<br>Server arg " + server.arg(i);
-      //  webMessage += "<br>Server argName " + server.argName(i);
-
-      if (server.argName(i) == "daySave") {
-        // checkbox is checked
-        daylightSavings = true;
-      }
-
-      if (server.argName(i) == "24hour") {
-        // checkbox is checked
-        hourTime = true;
-      }
-
-      if (server.argName(i) == "interval") {
-
-        if (isValidNumber(server.arg(i)) ) // error checking to make sure we have a number
-        {
-          interval = server.arg(i).toInt() * 1000;
-        }
-        else
-        {
-          webMessage = "Interval must be a valid number";
-        }
-
-      }
-
-      if (server.argName(i) == "timezone") {
-
-        UTCoffset = server.arg(i).toFloat();
-      }
-
-    }
-  }
-
-  if (webMessage == "")
-  {
-    updateProperties();
-    webMessage = "Settings Updated";
-  }
-
-  setDateTime();
-
-  String webString = setHTML();
-  server.send(200, "text/html", webString);            // send to someones browser when asked
-
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////
-
-void handle_time() // this function handles the AJAX call
-{
-  server.send(200, "text/html", dateStr + " &nbsp; &nbsp; &nbsp; " + timeStr);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
-
-void handle_root() {
-
-  webMessage = "";
-  String webString = setHTML();
-  server.send(200, "text/html", webString);            // send to someones browser when asked
-
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////
 
 // Disegno logo aziendale in fase di BootStrap
 static unsigned char ACROBOT[] PROGMEM ={
@@ -893,7 +370,9 @@ if (!bmp.begin()) {
 void loop() {
  // Wait a few seconds between measurements. 
  delay(5000);
- 
+
+ const int deepSleepSecs = 1800;
+ unsigned long int actSleepTime = deepSleepSecs * 1000000;
  float rzero = mq135_sensor.getRZero();
  float temperature = dht.readTemperature();
  float humidity = dht.readHumidity();
@@ -1172,19 +651,23 @@ void loop() {
    digitalWrite(LED_BUILTIN, HIGH); // Turn LED on.
    delay(10000);
    digitalWrite(LED_BUILTIN, LOW); // Turn LED off.
-   
- //  Serial.print("\n Power saving and wait 5 minutes");
- //  client.stop();
    Serial.print("-------------------------------------------------------------------------------------------------"); 
    Serial.print("\n");
-   // WiFi.forceSleepWake();
-
-
-
+  
 // draw("Temperature (Celsius) ...", TEMPERATURE, int(currentTemperature));
- if ( hour() > 6 && hour() < 19 ) {draw("Temperature (Celsius) ...", TEMPERATUREDAY, int(currentTemperature));}
- if ( hour() > 19 && hour() < 6 ) {draw("Temperature (Celsius) ...", TEMPERATURENIGHT, int(currentTemperature));}
+// if ( hour() > 6 && hour() < 19 ) {draw("Temperature (Celsius) ...", TEMPERATUREDAY, int(currentTemperature));}
 
+ if ( hour() > 19 && hour() < 6 ) 
+ {
+   draw("Temperature (Celsius) ...", TEMPERATURENIGHT, int(currentTemperature));
+   Serial.print("\n Power saving mode and wait 30 minutes");
+   u8g2.sleepOn();
+   ESP.deepSleep(actSleepTime);
+   client.stop();
+ }  
+else if ( hour() > 6 && hour() < 19 ) 
+{
+draw("Temperature (Celsius) ...", TEMPERATUREDAY, int(currentTemperature));
 draw("Humidity (%) ...", HUMIDITY, int(humidity));
 draw("Pressure (hPa) ...", PRESSURE, int(currentPressurehPA));
  if ( correctedPPM > 1 && correctedPPM < 700 ) {draw("Air Quality (PPM)... >>>EXCELLENT<<<", AIRQ, int(ppm));}
@@ -1198,17 +681,10 @@ draw("Air Quality (PPM) ...", AIRQ, int(ppm));
 draw("Dew Point (Celsius) ...", DEWPT, int(dewpt));
 
  
- // delay(1000); // delay one second before OLED display update
-//u8g2.sendBuffer();          // transfer internal memory to the display
-
-//client.stop();
-//u8g2.sleepOn();
-//WiFi.forceSleepWake();
-//delay(300000);
-//delay(5000);
-
-
-
+delay(1000); // delay one second before OLED display update
+u8g2.sendBuffer();          // transfer internal memory to the display
+}
+   client.stop();
    delay(20000);
 }
 
@@ -1577,3 +1053,531 @@ float getAltitude(float press, float temp) {
  const float sea_press = 1013.25;
  return ((pow((sea_press / press), 1/5.257) - 1.0) * (temp + 273.15)) / 0.0065;
 }
+
+///////////////////////////////////////////////////////////////////////////
+// Time functions
+////////////////////////////////////////////////////////////////////////////
+
+// send an NTP request to the time server at the given address
+unsigned long sendNTPpacket(IPAddress& address)
+{
+  Serial.println("sending NTP packet...");
+  // set all bytes in the buffer to 0
+  memset(packetBuffer, 0, NTP_PACKET_SIZE);
+  // Initialize values needed to form NTP request
+  // (see URL above for details on the packets)
+  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
+  packetBuffer[1] = 0;     // Stratum, or type of clock
+  packetBuffer[2] = 6;     // Polling Interval
+  packetBuffer[3] = 0xEC;  // Peer Clock Precision
+  // 8 bytes of zero for Root Delay & Root Dispersion
+  packetBuffer[12]  = 49;
+  packetBuffer[13]  = 0x4E;
+  packetBuffer[14]  = 49;
+  packetBuffer[15]  = 52;
+
+  // all NTP fields have been given values, now
+  // you can send a packet requesting a timestamp:
+  udp.beginPacket(address, 123); //NTP requests are to port 123
+  udp.write(packetBuffer, NTP_PACKET_SIZE);
+  udp.endPacket();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+void setDateTime()
+{
+
+  unsigned long epoch;
+
+  Serial.print("\t .....Updating Time.....");
+
+ // display.clear();
+ // display.drawString(0, 0,  timeStr);
+ // display.drawString(0, 19, dateStr);
+ // display.drawString(0, 40, "-Updating Time-");
+ // display.display();
+
+  lastMillis = currentMillis;
+
+  //get a random server from the pool
+  WiFi.hostByName(ntpServerName, timeServerIP);
+
+  sendNTPpacket(timeServerIP); // send an NTP packet to a time server
+  // wait to see if a reply is available
+  delay(1000);
+
+  int cb = udp.parsePacket();
+  if (!cb) {
+    Serial.println("\t no packet yet");
+  }
+  else {
+    Serial.print("packet received, length=");
+    Serial.println(cb);
+    // We've received a packet, read the data from it
+    udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
+
+    //the timestamp starts at byte 40 of the received packet and is four bytes,
+    // or two words, long. First, esxtract the two words:
+
+    unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
+    unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
+    // combine the four bytes (two words) into a long integer
+    // this is NTP time (seconds since Jan 1 1900):
+    secsSince1900 = highWord << 16 | lowWord;
+
+  }
+  //Serial.print("secsSince1900: ");
+  //Serial.println(secsSince1900);
+  const unsigned long seventyYears = 2208988800UL;
+  // subtract seventy years:
+  epoch = secsSince1900 - seventyYears;
+
+  epoch = epoch + (int)(UTCoffset * 3600);
+  if (daylightSavings)
+  {
+    epoch = epoch + 3600;
+  }
+
+  setTime(epoch);
+
+}
+
+/////////////////////////////////////////
+//        HTML functions
+////////////////////////////////////////
+
+
+
+String getDropDown()
+{
+  String webString = "";
+  webString += "<select name=\"timezone\">\n";
+  webString += "   <option value=\"-12\" ";
+  if (UTCoffset == -12)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -12:00) Eniwetok, Kwajalein</option>\n";
+
+  webString += "   <option value=\"-11\" ";
+  if (UTCoffset == -11)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -11:00) Midway Island, Samoa</option>\n";
+
+  webString += "   <option value=\"-10\" ";
+  if (UTCoffset == -10)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -10:00) Hawaii</option>\n";
+
+  webString += "   <option value=\"-9\" ";
+  if (UTCoffset == -9)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -9:00) Alaska</option>\n";
+
+  webString += "   <option value=\"-8\" ";
+  if (UTCoffset == -8)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -8:00) Pacific Time (US &amp; Canada)</option>\n";
+
+  webString += "   <option value=\"-7\" ";
+  if (UTCoffset == -7)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -7:00) Mountain Time (US &amp; Canada)</option>\n";
+
+  webString += "   <option value=\"-6\" ";
+  if (UTCoffset == -6)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>\n";
+
+  webString += "   <option value=\"-5\" ";
+  if (UTCoffset == -5)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>\n";
+
+  webString += "   <option value=\"-4.5\" ";
+  if (UTCoffset == -4.5)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -4:30) Caracas</option>\n";
+
+  webString += "   <option value=\"-4\" ";
+  if (UTCoffset == -4)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -4:00) Atlantic Time (Canada), La Paz, Santiago</option>\n";
+
+  webString += "   <option value=\"-3.5\" ";
+  if (UTCoffset == -3.5)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -3:30) Newfoundland</option>\n";
+
+  webString += "   <option value=\"-3\" ";
+  if (UTCoffset == -3)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>\n";
+
+  webString += "   <option value=\"-2\" ";
+  if (UTCoffset == -2)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -2:00) Mid-Atlantic</option>\n";
+
+  webString += "   <option value=\"-1\" ";
+  if (UTCoffset == -1)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT -1:00 hour) Azores, Cape Verde Islands</option>\n";
+
+  webString += "   <option value=\"0\" ";
+  if (UTCoffset == 0)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT) Western Europe Time, London, Lisbon, Casablanca, Greenwich</option>\n";
+
+  webString += "   <option value=\"1\" ";
+  if (UTCoffset == 1)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>\n";
+
+  webString += "   <option value=\"2\" ";
+  if (UTCoffset == 2)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +2:00) Kaliningrad, South Africa, Cairo</option>\n";
+
+  webString += "   <option value=\"3\" ";
+  if (UTCoffset == 3)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>\n";
+
+  webString += "   <option value=\"3.5\" ";
+  if (UTCoffset == 3.5)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +3:30) Tehran</option>\n";
+
+  webString += "   <option value=\"4\" ";
+  if (UTCoffset == 4)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +4:00) Abu Dhabi, Muscat, Yerevan, Baku, Tbilisi</option>\n";
+
+  webString += "   <option value=\"4.5\" ";
+  if (UTCoffset == 4.5)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +4:30) Kabul</option>\n";
+
+  webString += "   <option value=\"5\" ";
+  if (UTCoffset == 5)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>\n";
+
+  webString += "   <option value=\"5.5\" ";
+  if (UTCoffset == 5.5)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +5:30) Mumbai, Kolkata, Chennai, New Delhi</option>\n";
+
+  webString += "   <option value=\"5.75\" ";
+  if (UTCoffset == 5.75)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +5:45) Kathmandu</option>\n";
+
+  webString += "   <option value=\"6\" ";
+  if (UTCoffset == 6)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +6:00) Almaty, Dhaka, Colombo</option>\n";
+
+  webString += "   <option value=\"6.5\" ";
+  if (UTCoffset == 6.5)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +6:30) Yangon, Cocos Islands</option>\n";
+
+  webString += "   <option value=\"7\" ";
+  if (UTCoffset == 7)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>\n";
+
+  webString += "   <option value=\"8\" ";
+  if (UTCoffset == 8)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>\n";
+
+  webString += "   <option value=\"9\" ";
+  if (UTCoffset == 9)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>\n";
+
+  webString += "   <option value=\"9.5\" ";
+  if (UTCoffset == 9.5)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +9:30) Adelaide, Darwin</option>\n";
+
+  webString += "   <option value=\"10\" ";
+  if (UTCoffset == 10)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>\n";
+
+  webString += "   <option value=\"11\" ";
+  if (UTCoffset == 11)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>\n";
+
+  webString += "   <option value=\"12\" ";
+  if (UTCoffset == 12)
+    webString += " selected=\"seleted\" ";
+  webString += ">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>\n";
+  webString += "  </select>\n";
+
+  return webString;
+}
+
+////////////////////////////////////////////////////////////////////
+
+String getAJAXcode()
+{
+
+  String webStr = "";
+  webStr += "<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js\"></script> \n";
+  webStr += "<script>\n";
+
+  webStr += " function loadTime() { \n";
+  webStr += " $(\"#timeDiv\").load(\"http://" + WiFi.localIP().toString() + "/time\"); \n";
+  webStr += "} \n\n";
+
+  webStr += " setInterval(loadTime, 1000); \n"; // every x milli seconds
+  webStr += " loadTime(); \n";// on load
+
+  webStr += " </script> \n";
+  return webStr;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+String setHTML()
+{
+
+float temperaturehtml = dht.readTemperature();
+ float humidityhtml = dht.readHumidity();
+
+  
+  String webString = "<html><head>\n";
+  //  webString += "<meta http-equiv=\"refresh\" content=\"30;url=http://" + WiFi.localIP().toString() + "\"> \n";
+  webString += getAJAXcode();
+  webString += "</head><body>\n";
+  webString += "<form action=\"http://" + WiFi.localIP().toString() + "/submit\" method=\"POST\">";
+  webString += "<h1>MR WATT WEATHER STATION Clock IoT </h1>\n";
+  webString += "<div style=\"color:red\">" + webMessage + "</div>\n";
+
+  webString += "<div id=\"timeDiv\" style=\"color:blue; font-size:24px; font-family:'Comic Sans MS'\">" + dateStr + " &nbsp; &nbsp; &nbsp; " + timeStr + "</div>\n";
+
+  webString += "<br><br>" + getDropDown();
+
+  webString += "<br><table style=\"width:400px;\"><tr>";
+  webString += "<td style=\"text-align:right\">";
+  webString += "<div>Time Server Update Interval: </div>\n";
+  webString += "<div>Daylight Savings: </div>\n";
+  webString += "<div>24 hour: </div>\n";
+  webString += "</td>";
+  webString += "<td>";
+  webString += " <input type='text' value='" + String(interval / 1000) + "' name='interval' maxlength='10' size='4'> (secs)<br>\n";
+
+  if (daylightSavings)
+    webString += " <input type='checkbox' checked name='daySave' value='" +  String(daylightSavings) + "'/>";
+  else
+    webString += " <input type='checkbox' name='daySave' value='" +  String(daylightSavings) + "'  />";
+
+
+  if (hourTime)
+    webString += "<br><input type='checkbox' checked name='24hour' value='" +  String(hourTime) + "'/>";
+  else
+    webString += "<br><input type='checkbox' name='24hour' value='" +  String(hourTime) + "'  />";
+
+  webString += " <input type='submit' value='Submit' >\n";
+
+  webString += "</td></tr></table>\n";
+
+  webString += "<div><a href=\"/\">Refresh</a></div> \n";
+ // webString += "<table style=\"width:100%\"><tr><tr><th>Firstname</th><th>Lastname</th><th>Age</th></tr><tr><td>Jill</td><td>Smith</td><td>50</td></tr><tr><td>Eve</td><td>Jackson</td><td>94</td></tr></table>\n";
+  webString +="<!DOCTYPE html><html><head><style>table\ {\ font-family:\ arial,\ sans-serif;\ border-collapse:\ collapse;\ width:\ 100%;\ }\ td,\ th\ {\ border:\ 1px\ solid\ #dddddd;\ text-align:\ left;\ padding:\ 8px;\ }\ tr:nth-child(even)\ {\ background-color:\ #dddddd;\ }</style></head><body><h2>WEATHER STATION SUMMARY</h2><table><tr><th>SENSOR</th><th>VALUE</th></tr><tr><td>Temperature (C)</td><td>" + String((float)temperaturehtml,1) + "</td></tr><tr><td>Humidity (%)</td><td>" + String((float)humidityhtml,1) + "</td></tr><tr><td>Dew Point (C)</td><td></td></tr><tr><td>Pressure (hPa)</td><td></td></tr><tr><td>BMP180 Temp. (C)</td><td></td></tr><tr><td>Wet Bulb Temp. (C)</td><td></td></tr><tr><td>Air Quality (PPM)</td><td></td></tr></table></body></html>\n";
+
+
+  webString += "</form></body></html>\n";
+  
+
+  return webString;
+}
+
+
+
+/////////////////////////////////////////////////////////////
+//   File functions
+/////////////////////////////////////////////////////////////
+
+void updateProperties()
+{
+  File f = SPIFFS.open(fName, "w");
+  if (!f) {
+
+    Serial.println("file open for properties failed");
+  }
+  else
+  {
+    Serial.println("====== Updating to properties file =========");
+ //   display.clear();
+ //   display.drawString(0, 0, " Updating");
+ //   display.drawString(0, 19, "properties");
+ //   display.drawString(0, 40, "file...");
+ //   display.display();
+
+    f.print(UTCoffset); f.print( ","); f.print(daylightSavings);
+    f.print("~"); f.print(interval);
+    f.print(":"); f.println(hourTime);
+
+    Serial.println("Properties file updated");
+
+    f.close();
+  }
+}
+
+/////////////////////////////////////////
+
+void initPropFile()
+{
+
+  SPIFFS.begin();
+  delay(10);
+  /////////////////////////////////////////////////////////
+  // SPIFFS.format(); // uncomment to completely clear data
+  // return;
+  ///////////////////////////////////////////////////////////
+  File f = SPIFFS.open(fName, "r");
+
+  if (!f) {
+
+    Serial.println("Please wait 30 secs for SPIFFS to be formatted");
+
+ //   display.clear();
+  //  display.drawString(0, 0,  "Formatting...");
+ //   display.drawString(0, 19, "Please wait 30");
+ //   display.drawString(0, 40, "seconds.");
+ //   display.display();
+
+    SPIFFS.format();
+
+    Serial.println("Spiffs formatted");
+
+    updateProperties();
+
+  }
+  else
+  {
+    Serial.println("Properties file exists. Reading.");
+
+    while (f.available()) {
+
+      //Lets read line by line from the file
+      String str = f.readStringUntil('\n');
+
+      String offsetStr = str.substring(0, str.indexOf(",")  );
+      String dSavStr = str.substring(str.indexOf(",") + 1, str.indexOf("~") );
+      String intervalStr = str.substring(str.indexOf("~") + 1, str.indexOf(":") );
+      String hourStr = str.substring(str.indexOf(":") + 1 );
+
+      UTCoffset = offsetStr.toFloat();
+      daylightSavings = dSavStr.toInt();
+      interval = intervalStr.toInt();
+      hourTime = hourStr.toInt();
+
+    }
+
+    f.close();
+  }
+
+}
+
+//////////////////////////////////////////////////////////
+// used to error check the text box input
+/////////////////////////////////////////////////////////
+
+boolean isValidNumber(String str) {
+  for (byte i = 0; i < str.length(); i++)
+  {
+    if (isDigit(str.charAt(i))) return true;
+  }
+  return false;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+/// client handlers
+//////////////////////////////////////////////////////////////////////////////////////
+
+void handle_submit() {
+
+  webMessage = "";
+  daylightSavings = true;
+  hourTime = false;
+
+  if (server.args() > 0 ) {
+    for ( uint8_t i = 0; i < server.args(); i++ ) {
+
+      // can be useful to determine the values from a form post.
+      //  webMessage += "<br>Server arg " + server.arg(i);
+      //  webMessage += "<br>Server argName " + server.argName(i);
+
+      if (server.argName(i) == "daySave") {
+        // checkbox is checked
+        daylightSavings = true;
+      }
+
+      if (server.argName(i) == "24hour") {
+        // checkbox is checked
+        hourTime = true;
+      }
+
+      if (server.argName(i) == "interval") {
+
+        if (isValidNumber(server.arg(i)) ) // error checking to make sure we have a number
+        {
+          interval = server.arg(i).toInt() * 1000;
+        }
+        else
+        {
+          webMessage = "Interval must be a valid number";
+        }
+
+      }
+
+      if (server.argName(i) == "timezone") {
+
+        UTCoffset = server.arg(i).toFloat();
+      }
+
+    }
+  }
+
+  if (webMessage == "")
+  {
+    updateProperties();
+    webMessage = "Settings Updated";
+  }
+
+  setDateTime();
+
+  String webString = setHTML();
+  server.send(200, "text/html", webString);            // send to someones browser when asked
+
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+void handle_time() // this function handles the AJAX call
+{
+  server.send(200, "text/html", dateStr + " &nbsp; &nbsp; &nbsp; " + timeStr);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+void handle_root() {
+
+  webMessage = "";
+  String webString = setHTML();
+  server.send(200, "text/html", webString);            // send to someones browser when asked
+
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////
