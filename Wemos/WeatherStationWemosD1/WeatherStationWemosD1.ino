@@ -50,7 +50,6 @@ Arduino = 29 -> WeMos= NC
 #include <ctype.h> // for isNumber check
 #include "Time.h"
 #include "TimeLib.h"
-//#include <ssd1306.h>
 #include "secrets.h"
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
@@ -65,9 +64,6 @@ int pin_switch = D3;
 extern "C" {
 #include "user_interface.h"
 }
-
-
-
 
 
 // Initialize PM10/PM2.5 Sensor SEN0177
@@ -120,6 +116,7 @@ float dewpt=0;          // dew point tempf
 
 WiFiClient  client;
 WiFiClientSecure clientsecure;
+
 //Initialize DHT22 Sensor
 #define DHTPIN 2     // what digital pin we're connected to
 
@@ -157,10 +154,8 @@ const char * myWriteAPIKey = SECRET_WRITE_APIKEY;
 const char * myReadAPIKey = SECRET_READ_APIKEY;
 
 // Settaggi Barometro BMP180 
-//float seaLevelPressure = 101325;
-float seaLevelPressure = 100457;
 // Valore calcolato in base all'altitudine : http://www.calctool.org/CALC/phys/default/pres_at_alt ho utilizzato il valore medio
-
+float seaLevelPressure = 100457;
 
 unsigned int localPort = 2390;      // local port to listen for UDP packets
 
