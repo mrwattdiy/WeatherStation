@@ -275,6 +275,11 @@ void setup() {
   Serial.println("BootStrap...");
   //pinMode(D6,INPUT);
   //pinMode(D7,OUTPUT);
+
+// New Feature WPS WiFI
+// Serial.println("\nPress WPS button on your router ...");
+//  delay(5000);
+//  startWPSPBC();
   
   //Settings for Pin Switch
   pinMode(pin_switch, INPUT);
@@ -404,23 +409,6 @@ void loop() {
 
   String AmPm = "";
 
-
-/*
-    if ( digitalRead(pin_switch) == HIGH) 
-    {
-       u8g2.sleepOff();
-//u8g2.backLightOn();
-
-    }
-    else
-    {
-       u8g2.sleepOn();
-//     u8g2.backLightOff();
-    }   
-*/
-
-
-
   u8g2.sleepOff();
   WiFi.mode(WIFI_STA);  
   wifi_station_connect();
@@ -501,13 +489,6 @@ void loop() {
   Serial.print("Date: ");
   Serial.print(dateStr);
   Serial.print("\n");
-
- // display.clear();
-//  display.drawString(0, 0,  timeStr);
-//  display.drawString(0, 19, dateStr);
-//  display.drawString(0, 40, WiFi.localIP().toString());
-
- // display.display();
 
  server.handleClient();
 
@@ -651,19 +632,6 @@ void loop() {
 // draw("Temperature (Celsius) ...", TEMPERATURE, int(currentTemperature));
 if ( hour() > 19 && hour() < 6 ) {draw("Temperature (Celsius) ...", TEMPERATURENIGHT, int(currentTemperature));}
 if ( hour() > 6 && hour() < 19 ) {draw("Temperature (Celsius) ...", TEMPERATUREDAY, int(currentTemperature));}
-/*
- if ( hour() > 19 && hour() < 6 ) 
- {
-   draw("Temperature (Celsius) ...", TEMPERATURENIGHT, int(currentTemperature));
-   Serial.print("\n Power saving mode and wait 30 minutes");
-   u8g2.sleepOn();
-   ESP.deepSleep(actSleepTime);
-   client.stop();
- }  
-else if ( hour() > 6 && hour() < 19 ) 
-{
-*/
-
 
 draw("Humidity (%) ...", HUMIDITY, int(humidity));
 draw("Pressure (hPa) ...", PRESSURE, int(currentPressurehPA));
@@ -931,6 +899,7 @@ void drawWeather(uint8_t symbol, int degree)
   The offset can be negative.
   Limitation: The monochrome font with 8 pixel per glyph
 */
+
 void drawScrollString(int16_t offset, const char *s)
 {
   static char buf[36];  // should for screen with up to 256 pixel width 
@@ -965,7 +934,6 @@ void drawScrollString(int16_t offset, const char *s)
     u8g2.setFont(u8g2_font_8x13_mf);
     u8g2.drawStr(-dx, 62, buf);
   }
-  
 }
 
 void draw(const char *s, uint8_t symbol, int degree)
@@ -1025,6 +993,7 @@ TWET += F;
 
 return TWET;
  }
+
 /*
 int transmitPM01(unsigned char *thebuf)
 {
@@ -1417,12 +1386,6 @@ void updateProperties()
   else
   {
     Serial.println("====== Updating to properties file =========");
- //   display.clear();
- //   display.drawString(0, 0, " Updating");
- //   display.drawString(0, 19, "properties");
- //   display.drawString(0, 40, "file...");
- //   display.display();
-
     f.print(UTCoffset); f.print( ","); f.print(daylightSavings);
     f.print("~"); f.print(interval);
     f.print(":"); f.println(hourTime);
@@ -1449,19 +1412,9 @@ void initPropFile()
   if (!f) {
 
     Serial.println("Please wait 30 secs for SPIFFS to be formatted");
-
- //   display.clear();
-  //  display.drawString(0, 0,  "Formatting...");
- //   display.drawString(0, 19, "Please wait 30");
- //   display.drawString(0, 40, "seconds.");
- //   display.display();
-
     SPIFFS.format();
-
     Serial.println("Spiffs formatted");
-
     updateProperties();
-
   }
   else
   {
@@ -1580,6 +1533,34 @@ void handle_root() {
 
 }
 
+/////////// WPS WiFI Function //////////////////////////////////////////////////////////
+bool startWPSPBC() {
+  Serial.println("WPS config start");
+  // WPS works in STA (Station mode) only -> not working in WIFI_AP_STA !!! 
+  WiFi.mode(WIFI_STA);
+  delay(1000);
+  WiFi.begin("foobar",""); // make a failed connection
+  while (WiFi.status() == WL_DISCONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  bool wpsSuccess = WiFi.beginWPSConfig();
+  if(wpsSuccess) {
+      // Well this means not always success :-/ in case of a timeout we have an empty ssid
+      String newSSID = WiFi.SSID();
+      if(newSSID.length() > 0) {
+        // WPSConfig has already connected in STA mode successfully to the new station. 
+        Serial.printf("WPS finished. Connected successfull to SSID '%s'", newSSID.c_str());
+        // save to config and use next time or just use - WiFi.begin(WiFi.SSID().c_str(),WiFi.psk().c_str());
+        //qConfig.wifiSSID = newSSID;
+        //qConfig.wifiPWD = WiFi.psk();
+        //saveConfig();
+      } else {
+        wpsSuccess = false;
+      }
+  }
+  return wpsSuccess; 
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
