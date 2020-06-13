@@ -1,5 +1,5 @@
 /*
- MR WATT - CECCHETTI SIMONE v.1.0 202006112022
+ MR WATT - CECCHETTI SIMONE v.1.0 202006132214
  Below are the mapped pins:
 Arduino = 0 -> WeMos = D3
 Arduino = 1 -> WeMos= NC
