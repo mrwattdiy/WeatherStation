@@ -1533,7 +1533,7 @@ void handle_root() {
 
 }
 
-/////////// WPS WiFI Function //////////////////////////////////////////////////////////
+/////////// WPS WiFI Functions //////////////////////////////////////////////////////////
 bool startWPSPBC() {
   Serial.println("WPS config start");
   // WPS works in STA (Station mode) only -> not working in WIFI_AP_STA !!! 
@@ -1544,6 +1544,7 @@ bool startWPSPBC() {
     delay(500);
     Serial.print(".");
   }
+
   bool wpsSuccess = WiFi.beginWPSConfig();
   if(wpsSuccess) {
       // Well this means not always success :-/ in case of a timeout we have an empty ssid
