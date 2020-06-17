@@ -1,5 +1,5 @@
 /*
- MR WATT - CECCHETTI SIMONE v.1.0 202006132214
+ MR WATT - CECCHETTI SIMONE v.1.0 202006171611
  Below are the mapped pins:
 Arduino = 0 -> WeMos = D3
 Arduino = 1 -> WeMos= NC
@@ -275,7 +275,7 @@ void setup() {
   Serial.println("BootStrap...");
   //pinMode(D6,INPUT);
   //pinMode(D7,OUTPUT);
-
+  pinMode(A0, INPUT);
 // New Feature WPS WiFI
 // Serial.println("\nPress WPS button on your router ...");
 //  delay(5000);
@@ -398,6 +398,7 @@ void loop() {
  String oledDew;
  float dewpt = 0;
  float wetBulbT = 0;
+ float BatteryVoltage=0.0;
 
  oledTemp = currentTemperature;
  oledHum = humidity;
@@ -502,8 +503,23 @@ void loop() {
   // Compute heat index in Celsius (isFahreheit = false)
   float hic = dht.computeHeatIndex(temperature, humidity, false);
 
- sensorValue = analogRead(A0);
- sensorVoltage = sensorValue/1024*5.0;
+ /*
+ * Wemos battery shield, measure Vbat
+ * add 100k between Vbat and ADC
+ * Voltage divider of 100k+220k over 100k
+ * gives 100/420k
+ * ergo 4.2V -> 1Volt
+ * Max input on A0=1Volt ->1023
+ * 4.2*(Raw/1023)=Vbat
+ */
+
+  BatteryVoltage=0.0;
+  raw = analogRead(A0);
+  BatteryVoltage=(raw*4.2);
+  
+ 
+ //sensorValue = analogRead(A0);
+ //sensorVoltage = sensorValue/1024*5.0;
 
  dewpt = (dewPoint(temperature, humidity));
  wetBulbT = (wetBulb(temperature, humidity, currentPressurehPA));
@@ -560,7 +576,9 @@ void loop() {
  Serial.print(wetBulbT);
  Serial.print("C ");
  Serial.print("\n");
-// Serial.print("\t Battery Spanning: ");
+ Serial.print("\t Battery Spanning: ");
+ Serial.print(BatteryVoltage);
+ Serial.print("V ");
 // Serial.print(getVoltage());
 // Serial.print("V ");
 // Serial.print("\t Battery Level: ");
@@ -612,6 +630,7 @@ void loop() {
    ThingSpeak.setField(5,ppm);
    ThingSpeak.setField(6,wetBulbT);
    ThingSpeak.setField(7,sensorVoltage);
+   ThingSpeak.setField(8,BatteryVoltage);
 //   ThingSpeak.setField(7,PM2_5Value);
 //   ThingSpeak.setField(8,PM10Value);
 
