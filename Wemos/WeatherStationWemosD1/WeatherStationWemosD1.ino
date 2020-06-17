@@ -55,6 +55,7 @@ Arduino = 29 -> WeMos= NC
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <WiFiClientSecure.h>
+#include <Adafruit_ADS1015.h>
 
 // Define the pins being used
 
@@ -146,6 +147,9 @@ MQ135 mq135_sensor = MQ135(PIN_MQ135);
 //Initialize BMP180 Barometer Sensor
 Adafruit_BMP085 bmp;
 
+
+//Initialize ADS1115 Mux
+//Adafruit_ADS1115 ads(0x48);
 
 // ThingSpeak Settings
 
@@ -399,6 +403,18 @@ void loop() {
  float dewpt = 0;
  float wetBulbT = 0;
  float BatteryVoltage=0.0;
+/*
+ int16_t adc0, adc1, adc2, adc3;
+
+ adc0 = ads.readADC_SingleEnded(0);
+ adc1 = ads.readADC_SingleEnded(1);
+ adc2 = ads.readADC_SingleEnded(2);
+ adc3 = ads.readADC_SingleEnded(3);
+ adc0 = map(adc0, 0, 26700, 0, 3);   // Scala di lettura ADC0
+ adc1 = map(adc1, 0, 26700, 0, 3);   // Scala di lettura ADC1
+ adc2 = map(adc2, 0, 26700, 0, 3);   // Scala di lettura ADC2
+ adc3 = map(adc3, 0, 26700, 0, 3);   // Scala di lettura ADC3
+*/
 
  oledTemp = currentTemperature;
  oledHum = humidity;
