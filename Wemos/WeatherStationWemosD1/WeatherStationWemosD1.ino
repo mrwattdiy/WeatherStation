@@ -1,37 +1,18 @@
 /*
  MR WATT - CECCHETTI SIMONE v.1.0 202006171611
  Below are the mapped pins:
-Arduino = 0 -> WeMos = D3
-Arduino = 1 -> WeMos= NC
-Arduino = 2 -> WeMos= D4 (LED)
-Arduino = 3 -> WeMos= NC
-Arduino = 4 -> WeMos= D2
-Arduino = 5 -> WeMos= D1
-Arduino = 6 -> WeMos= Watchdog(4) Reset
-Arduino = 7 -> WeMos= Watchdog(4) Reset
-Arduino = 8 -> WeMos= Watchdog(4) Reset
-Arduino = 9 -> WeMos= Watchdog(4) Reset
-Arduino = 10 -> WeMos= NC
-Arduino = 11 -> WeMos= Watchdog(4) Reset
-Arduino = 12 -> WeMos= D7 low, D6 sporadic
-Arduino = 13 -> WeMos= D0 high, D7 sporadic
-Arduino = 14 -> WeMos= D0 high, D6 Low, D7 Low, D5 Sporadic
-Arduino = 15 -> WeMos= High, D8 Sporadic
-Arduino = 16 -> WeMos= D0
-Arduino = 17 -> WeMos= NC
-Arduino = 18 -> WeMos= NC
-Arduino = 19 -> WeMos= NC
-Arduino = 20 -> WeMos= Stack Trace and Pin-Based(2) Reset
-Arduino = 21 -> WeMos= Stack Trace and Watchdog(4) Reset
-Arduino = 22 -> WeMos= Stack Trace and Watchdog(4) Reset
-Arduino = 23 -> WeMos= Stack Trace and Watchdog(4) Reset
-Arduino = 24 -> WeMos= NC
-Arduino = 25 -> WeMos= NC
-Arduino = 26 -> WeMos= NC
-Arduino = 27 -> WeMos= NC
-Arduino = 28 -> WeMos= NC
-Arduino = 29 -> WeMos= NC
- */
+Arduino = 0  -> NodeMCU = 3  -> WeMos = D3
+Arduino = 1  -> NodeMCU = 10 -> WeMos = TX
+Arduino = 2  -> NodeMCU = 4  -> WeMos = D4 (LED)
+Arduino = 3  -> NodeMCU = 9  -> WeMos = RX
+Arduino = 4  -> NodeMCU = 2  -> WeMos = D2 (SDA)
+Arduino = 5  -> NodeMCU = 1  -> WeMos = D1 (SCL)
+Arduino = 12 -> NodeMCU = 6  -> WeMos = D6 (MISO)
+Arduino = 13 -> NodeMCU = 7  -> WeMos = D7 (MOSI)
+Arduino = 14 -> NodeMCU = 5  -> WeMos = D5 (SCK)
+Arduino = 15 -> NodeMCU = 8  -> WeMos = D8 (SS)
+Arduino = 16 -> NodeMCU = 0  -> WeMos = D0
+*/
 
 
 
