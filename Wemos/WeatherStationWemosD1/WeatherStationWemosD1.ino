@@ -47,17 +47,19 @@ extern "C" {
 #include "user_interface.h"
 }
 
+/*
+PM10/PM2.5 Sensor SEN0177 temporary disabled 
 
-// Initialize PM10/PM2.5 Sensor SEN0177
-//#define LENG 31   //0x42 + 31 bytes equal to 32 bytes
-//unsigned char buf[LENG];
+//Initialize PM10/PM2.5 Sensor SEN0177
+#define LENG 31   //0x42 + 31 bytes equal to 32 bytes
+unsigned char buf[LENG];
 
-//int PM01Value=0;          //define PM1.0 value of the air detector module
-//int PM2_5Value=0;         //define PM2.5 value of the air detector module
-//int PM10Value=0;         //define PM10 value of the air detector module
+int PM01Value=0;          //define PM1.0 value of the air detector module
+int PM2_5Value=0;         //define PM2.5 value of the air detector module
+int PM10Value=0;         //define PM10 value of the air detector module
 
-//SoftwareSerial PMSerial(D6, D7); // RX, TX
-
+SoftwareSerial PMSerial(D6, D7); // RX, TX
+*/
 
 
 // Initialize Display
