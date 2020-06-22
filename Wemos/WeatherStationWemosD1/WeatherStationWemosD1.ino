@@ -504,7 +504,7 @@ void loop() {
 
  /*
  * Wemos battery shield, measure Vbat
- * add 100k between Vbat and ADC
+ * add 100k between Vbat+ and AD0
  * Voltage divider of 100k+220k over 100k
  * gives 100/420k
  * ergo 4.2V -> 1Volt
@@ -514,7 +514,8 @@ void loop() {
 
   BatteryVoltage=0.0;
   raw = analogRead(A0);
-  BatteryVoltage=(raw*4.2);
+  BatteryVoltage=raw/1023.0;
+  BatteryVoltage=BatteryVoltage*4.2;
   
  
  //sensorValue = analogRead(A0);
