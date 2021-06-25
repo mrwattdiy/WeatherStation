@@ -161,8 +161,10 @@ MQ135 mq135_sensor = MQ135(PIN_MQ135);
 Adafruit_BMP085 bmp;
 
 // Settaggi Barometro BMP180 
+// Settaggi Barometro BMP180 
+// Valore calcolato in base all'altitudine : http://www.calctool.org/CALC/phys/default/pres_at_alt ho utilizzato il valore medio
 float seaLevelPressure = 101325;
-
+float realAltitude = ALTITUDE;
 // Disegno logo aziendale in fase di BootStrap
 static unsigned char ACROBOT[] PROGMEM ={
 0x80, 0x00, 0x40, 0x00, 
@@ -354,7 +356,8 @@ void loop() {
  float ppm = mq135_sensor.getPPM();
  float correctedPPM = mq135_sensor.getCorrectedPPM(temperature, humidity);
  long currentPressure = bmp.readPressure();
- float currentAltitude = bmp.readAltitude();
+ //float currentAltitude = bmp.readAltitude();
+ float currentAltitude = getAltitude(bmp.readPressure(), bmp.readTemperature(),realAltitude);
  float currentTemperature = bmp.readTemperature();
  float currentSealevelPressure = bmp.readSealevelPressure();
  int currentPressurehPA = int(bmp.readPressure()/100);
@@ -898,4 +901,18 @@ void sendNTPpacket(IPAddress &address)
   Udp.beginPacket(address, 123); //NTP requests are to port 123
   Udp.write(packetBuffer, NTP_PACKET_SIZE);
   Udp.endPacket();
+}
+
+// Funzione per calcolare la pressione a livello del mare dalla pressione atmosferica, temperatura forniti dal BMP180 e altezza attuale
+// Calculates the sea-level pressure from the atmospheric pressure, temperature and altitude at the present location.
+// Further details: https://keisan.casio.com/exec/system/1224575267
+
+float getAltitude(float press, float temp, float h) {
+
+ float p0;
+ float altitude;
+ //return ((pow((sea_press / press), 1/5.257) - 1.0) * (temp + 273.15)) / 0.0065;
+ p0 = ((press/100) * pow(1 - (0.0065 * h / (temp + 0.0065 * h + 273.15)), -5.257));
+ altitude = bmp.readAltitude(p0 * 100);
+ return altitude;
 }
