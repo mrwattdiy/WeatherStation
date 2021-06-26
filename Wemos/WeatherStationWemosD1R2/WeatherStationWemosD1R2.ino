@@ -51,6 +51,13 @@ Arduino = 29 -> WeMos= NC
 #include "TimeLib.h"
 #include "secrets.h"
 
+int pin_switch = D3;
+
+#define FREQUENCY 80
+extern "C" {
+#include "user_interface.h"
+}
+
 #define TS_ENABLE_SSL // For HTTPS SSL connection
 // Fingerprint check, make sure that the certificate has not expired.
 const char * fingerprint = NULL; // use SECRET_SHA1_FINGERPRINT for fingerprint check
@@ -245,8 +252,6 @@ static unsigned char ACROBOT[] PROGMEM ={
 #define AIRQ 8
 #define DEWPT 9
 #define TEMPERATURENIGHT 10
-#define PM2.5 11
-#define PM10 12
 
 void setup() {
   Serial.begin(115200);
@@ -359,11 +364,10 @@ void loop() {
  //float currentAltitude = bmp.readAltitude();
  float currentAltitude = getAltitude(bmp.readPressure(), bmp.readTemperature(),realAltitude);
  float currentTemperature = bmp.readTemperature();
- float currentSealevelPressure = bmp.readSealevelPressure();
- int currentPressurehPA = int(bmp.readPressure()/100);
+ long currentSealevelPressure = bmp.readSealevelPressure();
+ long currentPressurehPA = int(bmp.readPressure()/100);
  unsigned int raw=0;
- float volt=0.0;
- // Time to sleep (in seconds):
+  // Time to sleep (in seconds):
  const int sleepTimeS = 60;
  String oledTemp;
  String oledHum;
@@ -372,8 +376,7 @@ void loop() {
  String oledDew;
  float dewpt = 0;
  float wetBulbT = 0;
- float BatteryVoltage=0.0;
-
+ 
  oledTemp = currentTemperature;
  oledHum = humidity;
  oledPressure = currentPressurehPA;
@@ -384,22 +387,19 @@ void loop() {
 
   u8g2.sleepOff();
 
-  WiFi.mode(WIFI_STA);  
+ WiFi.mode(WIFI_STA);  
   wifi_station_connect();
+  WiFi.begin(ssid, pass);
   
-   // Connect or reconnect to WiFi
-  if(WiFi.status() != WL_CONNECTED){
-    Serial.print("Attempting to connect to SSID: ");
-    Serial.println(SECRET_SSID);
-    while(WiFi.status() != WL_CONNECTED){
-      WiFi.begin(ssid, pass);  // Connect to WPA/WPA2 network. Change this line if using open or WEP network
-      Serial.print(".");
-      delay(5000);     
-    } 
-    Serial.println("\nConnected.");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
   }
+  Serial.println("");
+
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
 
   if (timeStatus() != timeNotSet) {
     if (now() != prevDisplay) { //update the display only if time has changed
@@ -416,9 +416,9 @@ void loop() {
   // Compute heat index in Celsius (isFahreheit = false)
   float hic = dht.computeHeatIndex(temperature, humidity, false);
 
+// Call dewPoint and wetBulb functions...
  dewpt = (dewPoint(temperature, humidity));
  wetBulbT = (wetBulb(temperature, humidity, currentPressurehPA));
-
  
  Serial.print("\t Temperature DHT22: ");
  Serial.print(temperature);
@@ -458,7 +458,7 @@ void loop() {
  Serial.print("\n");
  Serial.print("\t Pressure Sealevel BMP180: ");
  Serial.print(currentSealevelPressure);
- Serial.print("m ");
+ Serial.print("Pa ");
  Serial.print("\n");
  Serial.print("\t Dew Point: ");
  Serial.print(dewpt);
@@ -518,13 +518,15 @@ draw("Dew Point (Celsius) ...", DEWPT, int(dewpt));
  
 //delay(1000); // delay one second before OLED display update
 u8g2.sendBuffer();          // transfer internal memory to the display
-//}
+
+ //  u8g2.sleepOn();
+ //  ESP.deepSleep(actSleepTime);
    client.stop();
    delay(5000);
 }
 
 
-// This is section the function that the interrupt calls to increment the rotation count
+// This is section of the functions
 //-------------------------------------------------------------------------------------------------------------
 ////////////////////////////////////FUNCTIONS//////////////////////////////////////////////////////////////
 //-------------------------------------------------------------------------------------------------------------
