@@ -126,25 +126,8 @@ void digitalClockDisplay();
 void printDigits(int digits);
 void sendNTPpacket(IPAddress &address);
 
-
-
-/*
-unsigned int localPort = 2390;      // local port to listen for UDP packets
-
-/* Don't hardwire the IP address or we won't get the benefits of the pool.
-    Lookup the IP address for the host name instead */
-/*
-IPAddress timeServerIP; // time.inrim.it NTP server address
-const char* ntpServerName = "time.inrim.it";
-const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
-byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
-// A UDP instance to let us send and receive packets over UDP
-WiFiUDP udp;
-
-*/
-
 //Initialize DHT22 Sensor
-#define DHTPIN 2     // what digital pin we're connected to
+#define DHTPIN 2     // what digital pin we're connected to - Wemos D1 R2 mini pin D1
 
 // Uncomment whatever type you're using!
 //#define DHTTYPE DHT11   // DHT 11
@@ -164,10 +147,10 @@ DHT dht(DHTPIN, DHTTYPE);
 #define PIN_MQ135 A0
 MQ135 mq135_sensor = MQ135(PIN_MQ135);
 
+
 //Initialize BMP180 Barometer Sensor
 Adafruit_BMP085 bmp;
 
-// Settaggi Barometro BMP180 
 // Settaggi Barometro BMP180 
 // Valore calcolato in base all'altitudine : http://www.calctool.org/CALC/phys/default/pres_at_alt ho utilizzato il valore medio
 float seaLevelPressure = 101325;
@@ -330,8 +313,13 @@ if (!bmp.begin()) {
   Serial.println("Initialize DHT22...");
   dht.begin();
 
+
+ //  Serial.println("Initialize MQ135...");
+ 
+  
+
+// Initialize ThingSpeak
   Serial.println("Initialize ThingSpeak Channel...");
- // Initialize ThingSpeak
 
 /*
  if(fingerprint!=NULL){
@@ -419,6 +407,9 @@ void loop() {
 // Call dewPoint and wetBulb functions...
  dewpt = (dewPoint(temperature, humidity));
  wetBulbT = (wetBulb(temperature, humidity, currentPressurehPA));
+
+
+
  
  Serial.print("\t Temperature DHT22: ");
  Serial.print(temperature);
@@ -467,6 +458,7 @@ void loop() {
  Serial.print(wetBulbT);
  Serial.print("C ");
  Serial.print("\n");
+
  Serial.print("Sending data to MRWATT ThingSpeak Account...");
  Serial.print("\n");
 
