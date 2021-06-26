@@ -86,18 +86,6 @@ const char * myWriteAPIKey = SECRET_WRITE_APIKEY;
 const char * myReadAPIKey = SECRET_READ_APIKEY;
 unsigned long lastMillis = 0;
 unsigned long currentMillis = 0;
-/*
-float UTCoffset = 0;
-unsigned long lastMillis = 0;
-unsigned long currentMillis = 0;
-unsigned long secsSince1900 = 0;
-bool daylightSavings = false;
-bool hourTime = true;
-int interval = 30000; //
-String timeStr = "";
-String webMessage = "";
-String dateStr = "";
-*/
 float dewpt=0;          // dew point temp
 
 
@@ -352,7 +340,7 @@ void loop() {
  //float currentAltitude = bmp.readAltitude();
  float currentAltitude = getAltitude(bmp.readPressure(), bmp.readTemperature(),realAltitude);
  float currentTemperature = bmp.readTemperature();
- long currentSealevelPressure = bmp.readSealevelPressure();
+ //long currentSealevelPressure = bmp.readSealevelPressure();
  long currentPressurehPA = int(bmp.readPressure()/100);
  unsigned int raw=0;
   // Time to sleep (in seconds):
@@ -408,9 +396,6 @@ void loop() {
  dewpt = (dewPoint(temperature, humidity));
  wetBulbT = (wetBulb(temperature, humidity, currentPressurehPA));
 
-
-
- 
  Serial.print("\t Temperature DHT22: ");
  Serial.print(temperature);
  Serial.print("C ");
@@ -447,10 +432,10 @@ void loop() {
  Serial.print(currentTemperature);
  Serial.print("C");
  Serial.print("\n");
- Serial.print("\t Pressure Sealevel BMP180: ");
- Serial.print(currentSealevelPressure);
- Serial.print("Pa ");
- Serial.print("\n");
+// Serial.print("\t Pressure Sealevel BMP180: ");
+// Serial.print(currentSealevelPressure);
+// Serial.print("Pa ");
+// Serial.print("\n");
  Serial.print("\t Dew Point: ");
  Serial.print(dewpt);
  Serial.print("\n");
