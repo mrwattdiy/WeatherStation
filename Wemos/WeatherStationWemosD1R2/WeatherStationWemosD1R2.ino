@@ -1,5 +1,5 @@
 /*
- MR WATT - CECCHETTI SIMONE v.1.0 202106180638
+ MR WATT - CECCHETTI SIMONE v.1.0 202106271846
  WEATHER STATION - Temperature, Humidity, Pressure, Altitude, Air Quality, Dew Point, Wet Bulb
  Below are the mapped pins:
 Arduino = 0 -> WeMos = D3
@@ -34,7 +34,7 @@ Arduino = 28 -> WeMos= NC
 Arduino = 29 -> WeMos= NC
  */
 #include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
+//#include <ESP8266WebServer.h>
 #include <WiFiUdp.h>
 #include <WiFiClientSecure.h>
 #include <ThingSpeak.h>
@@ -115,7 +115,7 @@ void printDigits(int digits);
 void sendNTPpacket(IPAddress &address);
 
 //Initialize DHT22 Sensor
-#define DHTPIN 2     // what digital pin we're connected to - Wemos D1 R2 mini pin D1
+#define DHTPIN 2     // what digital pin we're connected to - Wemos D1 R2 mini pin D4
 
 // Uncomment whatever type you're using!
 //#define DHTTYPE DHT11   // DHT 11

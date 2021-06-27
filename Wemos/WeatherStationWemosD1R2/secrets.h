@@ -1,7 +1,7 @@
 // Use this file to store all of the private credentials
 // and connection details
 
-#define SECRET_SSID "VodafoneSurfer"            // replace MySSID with your WiFi network name
+#define SECRET_SSID "UnknownSurfer"            // replace MySSID with your WiFi network name
 #define SECRET_PASS "B311a@P3r.Te"      // replace MyPassword with your WiFi password
 
 #define SECRET_CH_ID_WEATHER_STATION 634036                     //MathWorks weather station
